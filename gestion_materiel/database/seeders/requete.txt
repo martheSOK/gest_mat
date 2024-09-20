@@ -1,0 +1,74 @@
+
+//matériel
+"type_materiel_id" : 6,
+"post_id" : null,
+"etat" : "Présent fonctionnel" ,
+"localisation" :"en magasin",
+"date_entree" : "12/08/2023",
+"date_sortie"  : null,
+"numero_serie" : "UNITecentral455"
+
+//post
+"salle_id" : 1,
+"nom" : "Post 101"
+
+
+//type matériel
+ "libelle" : "Unite centrale HP"
+
+//composant
+ "materiel_id" : 8,
+ "designation" :"carte mère 1"
+
+//Pret
+ "user_id" : 2,
+    "date_pret" : "2024-09-15",
+    "date_retour_prevu" : "2024-09-26",
+    "date_retour_effective" : "2024-09-28",
+    "type_pret" : "pret",
+    "eta" : "en cours"
+
+
+//salle
+"nomination" : "L2",
+"nombre_post" : 12
+
+
+
+//user
+"name": "BEVERI",
+  "prenom": "farida",
+  "contact": "93784598",
+  "email": "fafa@gmail.com",
+ "password" : "123456789"
+
+
+//update pret
+
+
+      "user_id": 2,
+      "date_pret": "2024-09-18T00:00:00.000000Z",
+      "date_retour": "2024-09-30 00:00:00",
+      "type_pret": "emprunt",
+      "etat": "en cours",
+      "ligne_prets": [
+        {
+
+          "pret_id": 3,
+          "materiel_id": 2,
+          "quantite_preter": 1
+        },
+        {
+
+          "pret_id": 3,
+          "materiel_id": 1,
+          "quantite_preter": 1
+        },
+        {
+      "created_at": "2024-09-18T13:49:37.000000Z",
+      "updated_at": "2024-09-18T13:49:37.000000Z"
+          "pret_id": 3,
+          "materiel_id": 2,
+          "quantite_preter": 1
+        }
+      ]

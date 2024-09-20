@@ -20,4 +20,9 @@ class InventaireController extends Controller
 
         return response()->json($statistiques);
     }
+
+
+    public function historiqueMateriel(){
+
+    }
 }

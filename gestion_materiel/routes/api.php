@@ -30,8 +30,10 @@ Route::post('posts/{post}/detach/users' ,[PostController::class,'detachUsers']);
 Route::post('materiels/{materiel_id}/assigne/post/{post_id}' ,[MaterielController::class,'assignToPoste']);
 Route::get('lignePrets/{pret_id}', [LignePretController::class, 'index']);
 //Route::post('lignePrets/{pret_id}/{materiel_id}', [LignePretController::class, 'store']);
+
 Route::get('lignePrets/lignePret_show/{lignePret}',[LignePretController::class, 'show']);
 Route::put('lignePrets/{lignePret}' , [LignePretController::class , 'update']);
 Route::delete('lignePrets/{lignePret}' , [LignePretController::class , 'destroy']);
 
 Route::get('/inventaire/statistiques/{dateDebut}/{dateFin}',[InventaireController::class, 'afficherStatistiquesMateriel']);
+Route::get('/historiqueDutilisation',[InventaireController::class, 'historiqueMateriel']);

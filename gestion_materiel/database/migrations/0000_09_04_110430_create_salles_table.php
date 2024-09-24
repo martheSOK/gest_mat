@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('salles', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('nomination');
-            $table->integer('nombre_post');
+            $table->integer('nombre_post')->nullable();
             $table->timestamps();
         });
     }

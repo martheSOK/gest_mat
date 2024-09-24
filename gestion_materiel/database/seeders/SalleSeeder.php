@@ -39,5 +39,10 @@ class SalleSeeder extends Seeder
             "nomination" => "salle enseignant",
             "nombre_post" => 4
         ]);
+
+        Salle::create([
+            "nomination" => "magasin",
+            "nombre_post" => null
+        ]);
     }
 }

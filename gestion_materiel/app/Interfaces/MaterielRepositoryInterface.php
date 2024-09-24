@@ -12,4 +12,7 @@ interface MaterielRepositoryInterface
     public function update(array $data,$id);
     public function delete($id);
     public function assigneToPost(int $post_id, int $materiel_id);
+    public function detachMaterielsFromPost(array $data, int $id);
+
+
 }

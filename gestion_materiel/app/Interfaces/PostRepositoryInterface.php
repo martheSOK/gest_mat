@@ -11,7 +11,7 @@ Interface PostRepositoryInterface
     public function store(array $data);
     public function update(array $data,$id);
     public function delete($id);
-    public function assigneUsers(int $userId, int $id);
+    public function assigneUsers(array $data, int $post);
     public function detachUsers(array $userIds, int $postId);
     public function verifierPosteActif(int $userId);
 }

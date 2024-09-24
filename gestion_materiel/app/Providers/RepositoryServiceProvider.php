@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Interfaces\AuthRepositoryInterface;
 use App\Interfaces\ComposantRepositoryInterface;
 use App\Interfaces\InventaireRepositoryInterface;
 use App\Interfaces\LignePretRepositoryInterface;
@@ -11,6 +12,7 @@ use App\Interfaces\PretRepositoryInterface;
 use App\Interfaces\SalleRepositoryInterface;
 use App\Interfaces\Type_materielRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
+use App\Repositories\AuthRepository;
 use App\Repositories\ComposantRepository;
 use App\Repositories\InventaireRepository;
 use App\Repositories\LignePretRepository;
@@ -41,6 +43,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(PretRepositoryInterface::class , PretRepository::class);
         $this->app->bind(LignePretRepositoryInterface::class , LignePretRepository::class);
         $this->app->bind(InventaireRepositoryInterface::class, InventaireRepository::class);
+        $this->app->bind(AuthRepositoryInterface::class, AuthRepository::class);
 
     }
 

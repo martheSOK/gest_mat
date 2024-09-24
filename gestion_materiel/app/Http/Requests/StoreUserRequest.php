@@ -26,9 +26,9 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'contact' => 'required|string|max:15|unique:users,contact',
+            'contact' => 'required|string|max:15',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',  // Validation du mot de passe
+            'password' => 'required|string|min:8|confirmed',  // Validation du mot de passe
 
             //'post_id' => 'nullable|exists:posts,id',  // Si `post_id` est optionnel
         ];
@@ -51,7 +51,7 @@ class StoreUserRequest extends FormRequest
             'contact.required' => 'Le contact est obligatoire.',
             'contact.string' => 'Le contact doit être une chaîne de caractères.',
             'contact.max' => 'Le contact ne peut pas dépasser 15 caractères.',
-            'contact.unique' => 'Ce contact est déjà utilisé par un autre utilisateur.',
+            //'contact.unique' => 'Ce contact est déjà utilisé par un autre utilisateur.',
 
             'email.required' => 'L\'email est obligatoire.',
             'email.email' => 'L\'email doit être une adresse email valide.',
@@ -62,7 +62,7 @@ class StoreUserRequest extends FormRequest
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.string' => 'Le mot de passe doit être une chaîne de caractères.',
             'password.min' => 'Le mot de passe doit comporter au moins 8 caractères.',
-            //'password.confirmed' => 'La confirmation du mot de passe ne correspond pas'
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas'
         ];
     }
 

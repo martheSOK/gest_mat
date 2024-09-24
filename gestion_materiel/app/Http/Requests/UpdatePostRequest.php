@@ -26,6 +26,7 @@ class UpdatePostRequest extends FormRequest
         return [
             'salle_id' => 'required|integer|exists:salles,id',
             'nom' => 'required|string|max:255|unique:posts,nom',
+            'etat' => 'required|string|max:255|'
         ];
     }
 
@@ -41,6 +42,9 @@ class UpdatePostRequest extends FormRequest
             'nom.string' => 'Le nom doit être une chaîne de caractères.',
             'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
             'nom.unique' => 'Le nom doit être unique.',
+            'etat.required' => 'Le nom est obligatoire.',
+            'etat.string' => 'Le nom doit être une chaîne de caractères.',
+            'etat.max' => 'Le nom ne peut pas dépasser 255 caractères.',
         ];
     }
 

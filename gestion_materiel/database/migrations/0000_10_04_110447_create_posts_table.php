@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->integer('salle_id');
             $table->string('nom');
+            $table->enum('etat',["Disponible" ,"Partielement disponible", "Occupe"]);
             $table->timestamps();
 
 

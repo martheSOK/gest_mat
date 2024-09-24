@@ -1,12 +1,13 @@
 
 //matériel
-"type_materiel_id" : 6,
+"type_materiel_id" :2 ,
 "post_id" : null,
+"salle_id" : 6,
 "etat" : "Présent fonctionnel" ,
 "localisation" :"en magasin",
-"date_entree" : "12/08/2023",
+"date_entree" : "2024-09-24",
 "date_sortie"  : null,
-"numero_serie" : "UNITecentral455"
+"numero_serie" : "UNITecentral452"
 
 //post
 "salle_id" : 1,
@@ -72,3 +73,5 @@
           "quantite_preter": 1
         }
       ]
+//authentification
+Laravel Sanctum API series/laravel-api-app

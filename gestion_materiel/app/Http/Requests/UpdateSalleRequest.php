@@ -25,7 +25,7 @@ class UpdateSalleRequest extends FormRequest
     {
         return [
             'nomination' => 'required|string|max:100|unique:salles,nomination',
-            'nombre_post' => 'required|integer|min:1',
+            'nombre_post' => 'nullable|integer|min:1',
         ];
     }
 

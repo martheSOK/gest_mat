@@ -110,12 +110,26 @@ class PostController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Post $post)
-    {
-        //
-        $this->postRepositoryInterface->delete($post->id);
+        {
+            // Vérifie si le post est utilisé dans la table materiels
+            $postEstUtilise = DB::table('materiels')
+                ->where('post_id', $post->id)
+                ->exists();  // Utilise exists() pour vérifier si le poste est référencé dans la table materiels
 
-        return ApiResponseClass::sendResponse('Post Delete Successful', '', 200);
-    }
+            if (!$postEstUtilise) {
+                // Si aucun matériel ne fait référence à ce post, supprimer le post
+                $this->postRepositoryInterface->delete($post->id);
+                return ApiResponseClass::sendResponse('Post supprimé avec succès', '', 200);
+            }
+
+            // Si des matériels sont référencés à ce post, renvoyer un message d'erreur
+            return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
+        }
+
+
+
+
+
 
 
     public function postsDisponible()

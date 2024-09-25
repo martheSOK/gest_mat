@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Interfaces\InventaireRepositoryInterface;
 use App\Models\Materiel;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InventaireRepository implements InventaireRepositoryInterface
 {
@@ -104,23 +105,43 @@ class InventaireRepository implements InventaireRepositoryInterface
 
     }
 
-    public function materielUsagersSurPeriode($idTypeMateriel, $dateDebut, $dateFin)
-    {
-        return Materiel::where('type_materiel_id', $idTypeMateriel)
-            ->whereHas('ligne_prets', function ($query) use ($dateDebut, $dateFin) {
-                $query->whereBetween('created_at', [$dateDebut, $dateFin]);
-            })
-            ->with(['ligne_prets' => function ($query) use ($dateDebut, $dateFin) {
-                $query->whereBetween('created_at', [$dateDebut, $dateFin])
-                      ->with('user');
-            }])
-            ->get()
-            ->map(function ($materiel) {
-                return $materiel->ligne_prets->map(function ($lignePret) {
-                    return $lignePret->user;
-                });
-            })
-            ->flatten()
-            ->unique('id');
-    }
+    // public function materielUsagersSurPeriode($idTypeMateriel, $dateDebut, $dateFin)
+    // {
+    //     return Materiel::where('type_materiel_id', $idTypeMateriel)
+    //         ->whereHas('ligne_prets', function ($query) use ($dateDebut, $dateFin) {
+    //             $query->whereBetween('created_at', [$dateDebut, $dateFin]);
+    //         })
+    //         ->with(['ligne_prets' => function ($query) use ($dateDebut, $dateFin) {
+    //             $query->whereBetween('created_at', [$dateDebut, $dateFin])
+    //                   ->with('user');
+    //         }])
+    //         ->get()
+    //         ->map(function ($materiel) {
+    //             return $materiel->ligne_prets->map(function ($lignePret) {
+    //                 return $lignePret->user;
+    //             });
+    //         })
+    //         ->flatten()
+    //         ->unique('id');
+    // }
+
+    public function getUsagerMateriel($materielId, $dateDebut, $dateFin)
+{
+    return DB::table('prets')
+        ->join('ligne_prets', 'prets.id', '=', 'ligne_prets.pret_id') // Jointure avec ligne_prets
+        ->join('users', 'prets.user_id', '=', 'users.id') // Jointure avec users
+        ->join('materiels', 'ligne_prets.materiel_id', '=', 'materiels.id') // Jointure avec materiels
+        ->join('posts', 'materiels.post_id', '=', 'posts.id') // Jointure avec posts
+        ->where('ligne_prets.materiel_id', $materielId) // Filtrer sur materiel_id dans ligne_prets
+        ->where('prets.date_pret', '<=', $dateFin)
+        ->where('prets.date_retour', '>=', $dateDebut)
+        ->select('users.name AS user_name',
+                 'materiels.numero_serie AS materiel_numero_serie',
+                 'prets.date_pret',
+                 'prets.date_retour',
+                 'posts.nom AS post_nom')
+        ->get();
+}
+
+
 }

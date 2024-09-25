@@ -52,8 +52,10 @@ Route::delete('lignePrets/{lignePret}' , [LignePretController::class , 'destroy'
 
 //route pour l'inventaire
 Route::get('/inventaire/statistiques/{dateDebut}/{dateFin}',[InventaireController::class, 'afficherStatistiquesMateriel']);
+
 //route pour faire l'historique d'utilisation du matériel
-Route::get('/historiqueDutilisation',[InventaireController::class, 'historiqueMateriel']);
+Route::get('/historiqueDutilisation/{materielId}', [InventaireController::class, 'getUsagerMateriel']);
+
 
 //route pour l'authentification
 Route::post('register', [AuthController::class, 'register']);

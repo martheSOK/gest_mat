@@ -41,50 +41,63 @@ class PretController extends Controller
      * Store a newly created resource in storage.
      */
 
-    public function store(StorePretRequest $request)
-    {
-        // Récupérer les détails du prêt
-        $details = [
-            'user_id' => $request->user_id,
-            'date_pret' => $request->date_pret,
-            'date_retour' => $request->date_retour,
-            'type_pret' => $request->type_pret,
-            'etat' => $request->etat,
-        ];
+     public function store(StorePretRequest $request)
+     {
+         // Récupérer les détails du prêt
+         $details = [
+             'user_id' => $request->user_id,
+             'date_pret' => $request->date_pret,
+             'date_retour' => $request->date_retour,
+             'type_pret' => $request->type_pret,
+             'etat' => $request->etat,
+         ];
 
-        DB::beginTransaction();
+         DB::beginTransaction();
 
-        try {
-            // Créer le prêt
-            $pret = Pret::create($details);
-             // Ajouter les lignes de prêt
-            foreach ($request->ligne_prets as $ligne) {
-                $materiel = Materiel::find($ligne['materiel_id']);
-                if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
-                    // Ensuite, créer la ligne de prêt
-                    LignePret::create([
-                        'pret_id' => $pret->id,
-                        'materiel_id' => $ligne['materiel_id'],
-                        'quantite_preter' => $ligne['quantite_preter'],
-                    ]);
-                }else {
-                    throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
-                }
+         try {
+             // Créer le prêt
+             $pret = Pret::create($details);
 
+             // Ajouter les lignes de prêt et mettre à jour l'état et localisation des matériels
+             foreach ($request->ligne_prets as $ligne) {
+                 $materiel = Materiel::find($ligne['materiel_id']);
 
-            }
+                 // Vérifier que le matériel est prêt à être prêté
+                 if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
 
-            DB::commit();
-            return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt créé avec succès', 200);
+                     // Mise à jour des champs selon le type de prêt
+                     if ($request->type_pret == 'emprunt') {
+                         $materiel->etat = 'Absent';
+                         $materiel->localisation = 'en location';
+                         $materiel->salle_id = null;
+                     } elseif ($request->type_pret == 'réparation') {
+                         $materiel->etat = 'Absent';
+                         $materiel->localisation = 'en reparation';
+                         $materiel->salle_id = null;
+                     }
 
-        }
-        catch (\Exception $ex) {
-            DB::rollBack();
+                     // Sauvegarder les modifications sur le matériel
+                     $materiel->save();
 
-            Log::error("Erreur lors de la création du prêt: " . $ex->getMessage());
-            return ApiResponseClass::rollback($ex->getMessage());
-        }
-    }
+                     // Créer la ligne de prêt
+                     LignePret::create([
+                         'pret_id' => $pret->id,
+                         'materiel_id' => $ligne['materiel_id'],
+                         'quantite_preter' => $ligne['quantite_preter'],
+                     ]);
+                 } else {
+                     throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
+                 }
+             }
+
+             DB::commit();
+             return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt créé avec succès', 200);
+         } catch (\Exception $ex) {
+             DB::rollBack();
+             Log::error("Erreur lors de la création du prêt: " . $ex->getMessage());
+             return ApiResponseClass::rollback($ex->getMessage());
+         }
+     }
 
     /**
      * Display the specified resource.

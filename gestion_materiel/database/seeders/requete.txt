@@ -47,16 +47,16 @@
 //update pret
 
 
-      "user_id": 2,
-      "date_pret": "2024-09-18T00:00:00.000000Z",
-      "date_retour": "2024-09-30 00:00:00",
+     { "user_id": 2,
+      "date_pret": "2024-09-18",
+      "date_retour": "2024-09-30",
       "type_pret": "emprunt",
       "etat": "en cours",
       "ligne_prets": [
         {
 
           "pret_id": 3,
-          "materiel_id": 2,
+          "materiel_id": 5,
           "quantite_preter": 1
         },
         {
@@ -64,14 +64,12 @@
           "pret_id": 3,
           "materiel_id": 1,
           "quantite_preter": 1
-        },
-        {
-      "created_at": "2024-09-18T13:49:37.000000Z",
-      "updated_at": "2024-09-18T13:49:37.000000Z"
-          "pret_id": 3,
-          "materiel_id": 2,
-          "quantite_preter": 1
         }
-      ]
+        ]
+    }
 //authentification
 Laravel Sanctum API series/laravel-api-app
+
+
+//historique
+

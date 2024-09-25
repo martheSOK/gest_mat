@@ -108,7 +108,7 @@ class UserController extends Controller{
         if ($ex->getCode() == "23503") {
             // Retourne une réponse d'erreur personnalisée
             return ApiResponseClass::sendError(
-                'Impossible de supprimer ce user car il a effectué un prêt.',
+                'Action non permise.',
                 400
             );
         }

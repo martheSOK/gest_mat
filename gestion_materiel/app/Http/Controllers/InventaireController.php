@@ -22,21 +22,25 @@ class InventaireController extends Controller
         }
 
 
-        public function getUsagerMateriel(Request $request, $materielId)
-            {
-                $dateDebut = $request->input('date_debut');
-                $dateFin = $request->input('date_fin');
+        
+    public function getUsersUsingMateriel(Request $request, $materielId)
+        {
+            $request->validate([
+                'date_debut' => 'required|date',
+                'date_fin' => 'required|date|after_or_equal:date_debut',
+            ]);
 
+            $users = $this->inventaireInerface->getUsersByMaterielAndPeriod(
+                $materielId,
+                $request->input('date_debut'),
+                $request->input('date_fin')
+            );
 
-                $usagers = $this->inventaireInerface->getUsagerMateriel($materielId, $dateDebut, $dateFin);
-
-
-                if ($usagers->isEmpty()) {
-                    return response()->json(['message' => 'Aucun utilisateur n\'a utilisé ou prêté ce matériel dans cette période.'], 404);
-                }
-
-                return response()->json($usagers);
+            if ($users->isEmpty()) {
+                return response()->json(['message' => 'Aucun utilisateur n\'a utilisé ou prêté ce matériel dans cette période.'], 404);
             }
 
+            return response()->json($users);
+        }
 
 }

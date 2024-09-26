@@ -27,11 +27,6 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
-        // $posts=Post::all();
-        // return $posts ;
-
-
         $data = $this->postRepositoryInterface->index();
 
         return ApiResponseClass::sendResponse(PostResource::collection($data), '', 200);

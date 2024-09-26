@@ -105,43 +105,28 @@ class InventaireRepository implements InventaireRepositoryInterface
 
     }
 
-    // public function materielUsagersSurPeriode($idTypeMateriel, $dateDebut, $dateFin)
-    // {
-    //     return Materiel::where('type_materiel_id', $idTypeMateriel)
-    //         ->whereHas('ligne_prets', function ($query) use ($dateDebut, $dateFin) {
-    //             $query->whereBetween('created_at', [$dateDebut, $dateFin]);
-    //         })
-    //         ->with(['ligne_prets' => function ($query) use ($dateDebut, $dateFin) {
-    //             $query->whereBetween('created_at', [$dateDebut, $dateFin])
-    //                   ->with('user');
-    //         }])
-    //         ->get()
-    //         ->map(function ($materiel) {
-    //             return $materiel->ligne_prets->map(function ($lignePret) {
-    //                 return $lignePret->user;
-    //             });
-    //         })
-    //         ->flatten()
-    //         ->unique('id');
-    // }
+    
 
-    public function getUsagerMateriel($materielId, $dateDebut, $dateFin)
-{
-    return DB::table('prets')
-        ->join('ligne_prets', 'prets.id', '=', 'ligne_prets.pret_id') // Jointure avec ligne_prets
-        ->join('users', 'prets.user_id', '=', 'users.id') // Jointure avec users
-        ->join('materiels', 'ligne_prets.materiel_id', '=', 'materiels.id') // Jointure avec materiels
-        ->join('posts', 'materiels.post_id', '=', 'posts.id') // Jointure avec posts
-        ->where('ligne_prets.materiel_id', $materielId) // Filtrer sur materiel_id dans ligne_prets
-        ->where('prets.date_pret', '<=', $dateFin)
-        ->where('prets.date_retour', '>=', $dateDebut)
-        ->select('users.name AS user_name',
-                 'materiels.numero_serie AS materiel_numero_serie',
-                 'prets.date_pret',
-                 'prets.date_retour',
-                 'posts.nom AS post_nom')
-        ->get();
-}
+    public function getUsersByMaterielAndPeriod($materielId, $dateDebut, $dateFin)
+        {
+            // Récupérer le matériel avec ses lignes de prêt
+            $materiel = Materiel::with(['ligne_prets.user', 'post.userPosts.user'])
+                ->where('id', $materielId)
+                ->first();
+
+            // Collecter les utilisateurs ayant prêté le matériel
+            $usersFromPrets = $materiel->ligne_prets->filter(function ($lignePret) use ($dateDebut, $dateFin) {
+                return $lignePret->date_pret >= $dateDebut && $lignePret->date_pret <= $dateFin;
+            })->pluck('user');
+
+            // Collecter les utilisateurs associés au poste
+            $usersFromPosts = $materiel->post->userPosts->filter(function ($userPost) use ($dateDebut, $dateFin) {
+                return $userPost->created_at >= $dateDebut && $userPost->created_at <= $dateFin;
+            })->pluck('user');
+
+            // Fusionner les utilisateurs et supprimer les doublons
+            return $usersFromPrets->merge($usersFromPosts)->unique('id');
+        }
 
 
 }

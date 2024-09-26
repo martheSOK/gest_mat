@@ -16,5 +16,6 @@ interface InventaireRepositoryInterface
     public function materielLocationEtHorsService($idTypeMateriel);
     public function materielReparationEtHorsService($idTypeMateriel);
     public function statistiquesTousMateriels($dateDebut, $dateFin);
-    public function getUsagerMateriel($materielId, $dateDebut, $dateFin);
+   // public function getUsagerMateriel($materielId, $dateDebut, $dateFin);
+    public function getUsersByMaterielAndPeriod($materielId, $dateDebut, $dateFin);
 }

@@ -42,9 +42,9 @@ class StorePostRequest extends FormRequest
             'nom.string' => 'Le nom doit être une chaîne de caractères.',
             'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
             'nom.unique' => 'Le nom doit être unique.',
-            'etat.required' => 'Le nom est obligatoire.',
-            'etat.string' => 'Le nom doit être une chaîne de caractères.',
-            'etat.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'etat.required' => 'L\'etat est obligatoire.',
+            'etat.string' => 'L\'etat nom doit être une chaîne de caractères.',
+            'etat.max' => 'L\'etat ne peut pas dépasser 255 caractères.',
         ];
     }
     public function failedValidation(Validator $validator)

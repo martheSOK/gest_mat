@@ -107,8 +107,14 @@ class ComposantController extends Controller
      */
     public function destroy(Composant $composant)
     {
-        //
+        // Vérifier si le composant est associé à un matériel
+        if ($composant->materiel()->exists()) {
+            return ApiResponseClass::sendError('Action nom permise.', 400);
+        }
+
+        // Si aucun matériel n'est associé, procéder à la suppression
         $this->composantRepositoryInterface->delete($composant->id);
-        return ApiResponseClass::sendResponse('composant Delete Successful','',200);
+        return ApiResponseClass::sendResponse('Composant supprimé avec succès.', '', 200);
     }
+
 }

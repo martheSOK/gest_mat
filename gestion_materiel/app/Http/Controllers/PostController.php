@@ -129,7 +129,7 @@ class PostController extends Controller
 
     public function postsDisponible()
         {
-            //dd('eeeeeeeee');
+
             $postsDisponibles = Post::where('etat', '=' , 'Disponible')->get();
 
             if ($postsDisponibles->isEmpty()) {
@@ -186,7 +186,7 @@ class PostController extends Controller
             $this->postRepositoryInterface->assigneUsers($data, $post);
             DB::commit();
             if ($userActifs) {
-                $message = count($userActifs)."  a ou ont un post actif" ;
+                $message = count($userActifs)." user(s)  a ou ont un post actif" ;
             } else {
                 $message ="Post assigné avec succès";
             }

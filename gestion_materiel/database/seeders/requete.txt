@@ -41,7 +41,8 @@
   "prenom": "farida",
   "contact": "93784598",
   "email": "fafa@gmail.com",
- "password" : "123456789"
+ "password" : "12345678",
+ "password_confirmation": "12345678"
 
 
 //update pret
@@ -67,7 +68,36 @@
         }
         ]
     }
+
+"user_id": 2,
+      "date_pret": "2024-09-18",
+      "date_retour": "2024-09-30",
+      "type_pret": "emprunt",
+      "etat": "en cours",
+      "ligne_prets": [
+        {
+          "materiel_id": 3,
+          "quantite_preter": 1}
+        ]
+
+
+
+
+
+
+//assignation de users au posts
+"data": [1,2]
+//détacher des user au posts
+"user_ids" : [1,2]
+
+
+
+
+
 //authentification
+
+Authorization  Bearer 3|s79PHsY3GfiaLtPIY2SJwa8AkxYipk09R8jExAjpa5bf4d40
+
 Laravel Sanctum API series/laravel-api-app
 
 

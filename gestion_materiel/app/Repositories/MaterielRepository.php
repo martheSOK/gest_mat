@@ -59,27 +59,28 @@ class MaterielRepository implements MaterielRepositoryInterface
 
 
     public function detachMaterielsFromPost(array $materiel_ids, int $salleMagasinId)
-        {
-            // Récupérer tous les matériels à détacher
-            $materiels = Materiel::whereIn('id', $materiel_ids)->get();
+    {
+        // Récupérer tous les matériels à détacher
+        $materiels = Materiel::whereIn('id', $materiel_ids)->get();
 
-            foreach ($materiels as $materiel) {
-                // Vérifier si le matériel est déjà associé à un poste
-                if ($materiel->post_id !== null) {
-                    // Détacher le matériel du poste
-                    $materiel->post()->dissociate();
 
-                    // Changer la localisation en "en magasin"
-                    $materiel->localisation = 'en magasin';
 
-                    // Changer l'ID de la salle en celui de la salle "magasin"
-                    $materiel->salle_id = $salleMagasinId;
+        foreach ($materiels as $materiel) {
+            // Vérifier si le matériel est déjà associé à un poste
+            if ($materiel->post_id !== null) {
+                // Détacher le matériel du poste
+                $materiel->post()->dissociate();
 
-                    // Enregistrer les modifications
-                    $materiel->save();
-                }
+                // Changer la localisation en "en magasin"
+                $materiel->localisation = 'en magasin';
+
+                // Changer l'ID de la salle en celui de la salle "magasin"
+                $materiel->salle_id = $salleMagasinId;
+
+                // Enregistrer les modifications
+                $materiel->save();
             }
         }
-
+    }
 
 }

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class UpdatePostRequest extends FormRequest
 {
@@ -25,8 +26,16 @@ class UpdatePostRequest extends FormRequest
     {
         return [
             'salle_id' => 'required|integer|exists:salles,id',
-            'nom' => 'required|string|max:255|unique:posts,nom',
-            'etat' => 'required|string|max:255|'
+            //'nom' => 'required|string|max:255|unique:posts,nom,' . $this->route('post'),
+            'etat' => 'required|string|max:255|',
+            'nom' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('posts')->where(function ($query) {
+                return $query->where('salle_id', $this->salle_id);
+            })->ignore($this->route('post'))
+],
         ];
     }
 
@@ -42,9 +51,9 @@ class UpdatePostRequest extends FormRequest
             'nom.string' => 'Le nom doit être une chaîne de caractères.',
             'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
             'nom.unique' => 'Le nom doit être unique.',
-            'etat.required' => 'Le nom est obligatoire.',
-            'etat.string' => 'Le nom doit être une chaîne de caractères.',
-            'etat.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'etat.required' => 'L\'etat est obligatoire.',
+            'etat.string' => 'L\'etat nom doit être une chaîne de caractères.',
+            'etat.max' => 'L\'etat ne peut pas dépasser 255 caractères.',
         ];
     }
 

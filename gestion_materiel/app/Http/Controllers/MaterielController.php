@@ -156,22 +156,6 @@ class MaterielController extends Controller
 
 
 
-    // public function assignToPoste(int $materiel_id, int $post_id)
-    //     {
-    //         DB::beginTransaction();
-    //         try {
-
-    //             $this->materielRepositoryInterface->assigneToPost($post_id, $materiel_id);
-    //             DB::commit();
-    //             return ApiResponseClass::sendResponse('Matériel assigné avec succès au poste', '', 200);
-    //         }
-    //         catch (\Exception $ex) {
-    //             DB::rollBack();
-    //             Log::error("Erreur lors de l'assignation du matériel: " . $ex->getMessage());
-    //             return ApiResponseClass::rollback($ex->getMessage());
-    //         }
-    //     }
-
 
     public function assignToPoste(Request $request, int $post_id)
         {
@@ -179,10 +163,14 @@ class MaterielController extends Controller
             try {
                 // Récupérer la liste des matériels depuis le body de la requête
                 $materiels = $request->input('materiels');
+
+                if (!is_array($materiels)) {
+                    return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+                }
                 // Tableau pour les matériels déjà assignés
                 $materielsDejaAssignes = [];
                 // Tableau pour les matériels non valides
-                $materielsNonValides = [];
+                $materielsNonAssignable = [];
 
                 // Filtrer les matériels pour retirer ceux qui ne remplissent pas les conditions
                 foreach ($materiels as $key => $materiel_id) {
@@ -199,8 +187,8 @@ class MaterielController extends Controller
 
                     // Vérifier l'état et la localisation
                     if ($materiel->etat !== 'Présent fonctionnel' || $materiel->localisation !== 'en magasin') {
-                        // Ajouter ce matériel au tableau des matériels non valides
-                        $materielsNonValides[] = $materiel_id;
+                        // Ajouter ce matériel au tableau des matériels prêter ou en reparation
+                        $materielsNonAssignable[] = $materiel_id;
                         // Retirer ce matériel du tableau des matériels à assigner
                         unset($materiels[$key]);
                         continue; // Passer au matériel suivant
@@ -229,13 +217,13 @@ class MaterielController extends Controller
                 if (!empty($materielsDejaAssignes)) {
                     $messages[] = 'Certains matériels étaient déjà associés à un poste.';
                 }
-                if (!empty($materielsNonValides)) {
+                if (!empty($materielsNonAssignable)) {
                     $messages[] = 'Certains matériels n\'étaient pas valides (état ou localisation incorrects).';
                 }
 
                 return ApiResponseClass::sendResponse('Matériels traités avec succès.', [
                     'materiels_deja_assignes' => $materielsDejaAssignes,
-                    'materiels_non_valides' => $materielsNonValides,
+                    'materiels_non_assignable' => $materielsNonAssignable,
                 ], 200);
             }
             catch (\Exception $ex) {
@@ -255,7 +243,9 @@ class MaterielController extends Controller
                 try {
                     // Récupérer les IDs des matériels depuis le body de la requête
                     $materielIds = $request->input('materiels'); // Tableau d'IDs de matériels
-
+                    if (!is_array($materielIds)) {
+                        return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+                    }
                     // Récupérer l'ID de la salle avec la nomination "magasin"
                     $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
                     $salleMagasinId = $salleMagasin->id;

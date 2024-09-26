@@ -31,13 +31,16 @@ class UpdateMaterielRequest extends FormRequest
             'etat' => 'required|string|max:255',
             'localisation' => 'required|string|max:255',
             'date_entree' => 'required|date|before_or_equal:today',
-            // `date_sortie` is nullable and not required
             'date_sortie' => 'nullable|date',
-            'numero_serie' => [ 'required', 'string','min:10', 'max:100',
-                Rule::unique('materiels', 'numero_serie') ]
+            'numero_serie' => [
+                'required',
+                'string',
+                'min:10',
+                'max:100',
+                 // Ignore l'enregistrement actuel
+                Rule::unique('materiels', 'numero_serie')->ignore($this->route('materiel')),
+            ],
         ];
-
-
     }
 
     /**

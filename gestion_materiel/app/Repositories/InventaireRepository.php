@@ -105,28 +105,57 @@ class InventaireRepository implements InventaireRepositoryInterface
 
     }
 
-    
+
 
     public function getUsersByMaterielAndPeriod($materielId, $dateDebut, $dateFin)
-        {
-            // Récupérer le matériel avec ses lignes de prêt
-            $materiel = Materiel::with(['ligne_prets.user', 'post.userPosts.user'])
-                ->where('id', $materielId)
-                ->first();
+    {
+        // Récupérer le matériel avec ses lignes de prêt et les utilisateurs associés au poste
+        $materiel = Materiel::with(['ligne_prets.pret.user', 'post.users'])
+            ->where('id', $materielId)
+            ->first();
 
-            // Collecter les utilisateurs ayant prêté le matériel
-            $usersFromPrets = $materiel->ligne_prets->filter(function ($lignePret) use ($dateDebut, $dateFin) {
-                return $lignePret->date_pret >= $dateDebut && $lignePret->date_pret <= $dateFin;
-            })->pluck('user');
-
-            // Collecter les utilisateurs associés au poste
-            $usersFromPosts = $materiel->post->userPosts->filter(function ($userPost) use ($dateDebut, $dateFin) {
-                return $userPost->created_at >= $dateDebut && $userPost->created_at <= $dateFin;
-            })->pluck('user');
-
-            // Fusionner les utilisateurs et supprimer les doublons
-            return $usersFromPrets->merge($usersFromPosts)->unique('id');
+        if (!$materiel) {
+            return response()->json(['message' => 'Le matériel spécifié n\'existe pas.'], 404);
         }
 
+        // Collecter les utilisateurs ayant prêté le matériel
+        $userPret = $materiel->ligne_prets;
+        // La méthode filter() parcourt chaque élément (chaque lignePret dans ce cas) de la collection
+        // ligne_prets et applique une fonction de filtrage. La fonction anonyme qui prend chaque lignePret comme paramètre.
+        $usersFromPrets = $userPret->filter(function ($lignePret) use ($dateDebut, $dateFin) {
+            return $lignePret->created_at >= $dateDebut && $lignePret->created_at <= $dateFin;
+        })->map(function ($lignePret) {
+            return $lignePret->pret->user; // Accéder à l'utilisateur ici
+        });
+
+        // Collecter les utilisateurs associés au poste
+        $usersPost = $materiel->post ? $materiel->post->users : collect();
+        //
+        $usersFromPosts = $usersPost->filter(function ($userPost) use ($dateDebut, $dateFin) {
+            return $userPost->pivot->created_at >= $dateDebut && $userPost->pivot->created_at <= $dateFin;
+        });
+
+        // Préparer un message d'information
+        $message = [];
+        if ($usersFromPrets->isEmpty() && $usersFromPosts->isEmpty()) {
+            $message[] = 'Ce matériel n\'a été ni prêté ni utilisé dans la période donnée.';
+        } else {
+            if ($usersFromPrets->isNotEmpty()) {
+                $message[] = 'Ce matériel a été prêté par certains utilisateurs.';
+            }
+            if ($usersFromPosts->isNotEmpty()) {
+                $message[] = 'Ce matériel a été utilisé par certains utilisateurs.';
+            }
+        }
+
+        // Retourner les utilisateurs des prêts et des postes avec le message
+        return response()->json([
+            'message' => implode(' ', $message),
+            'users_from_prets' => $usersFromPrets->filter(function ($user) {
+                return $user !== null; // Filtrer les utilisateurs null
+            }),
+            'users_from_posts' => $usersFromPosts
+        ]);
+    }
 
 }

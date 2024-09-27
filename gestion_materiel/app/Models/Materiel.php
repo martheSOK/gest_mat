@@ -14,6 +14,7 @@ class Materiel extends Model
     protected $fillable=[
         'type_materiel_id',
         'post_id',
+        'salle_id',
         'etat',
         'localisation',
         'date_entree',
@@ -37,13 +38,18 @@ class Materiel extends Model
 
     public function post(): BelongsTo
     {
-        return $this->belongsTo(post::class);
+        return $this->belongsTo(Post::class);
     }
 
 
     public function ligne_prets() :HasMany
     {
         return $this->hasmany(LignePret::class);
+    }
+
+    public function salle() :BelongsTo
+    {
+        return $this->belongsTo(Salle::class);
     }
 
 

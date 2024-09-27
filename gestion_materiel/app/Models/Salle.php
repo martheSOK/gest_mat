@@ -25,4 +25,10 @@ class Salle extends Model
     {
         return $this->hasMany(Post::class);
     }
+
+    public function materiels() :HasMany
+    {
+        return $this->hasmany(Materiel::class);
+    }
+
 }

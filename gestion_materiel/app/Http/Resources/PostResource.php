@@ -20,6 +20,7 @@ class PostResource extends JsonResource
             'salle_id' => $this->salle_id,
             //'nom de la salle' => $this->salle()->nomination,
             'nom' => $this->nom,
+            'etat' => $this->etat,
 
         ];
     }

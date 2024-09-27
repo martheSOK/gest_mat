@@ -1,12 +1,13 @@
 
 //matériel
-"type_materiel_id" : 6,
+"type_materiel_id" :2 ,
 "post_id" : null,
+"salle_id" : 6,
 "etat" : "Présent fonctionnel" ,
 "localisation" :"en magasin",
-"date_entree" : "12/08/2023",
+"date_entree" : "2024-09-24",
 "date_sortie"  : null,
-"numero_serie" : "UNITecentral455"
+"numero_serie" : "UNITecentral452"
 
 //post
 "salle_id" : 1,
@@ -40,22 +41,23 @@
   "prenom": "farida",
   "contact": "93784598",
   "email": "fafa@gmail.com",
- "password" : "123456789"
+ "password" : "12345678",
+ "password_confirmation": "12345678"
 
 
 //update pret
 
 
-      "user_id": 2,
-      "date_pret": "2024-09-18T00:00:00.000000Z",
-      "date_retour": "2024-09-30 00:00:00",
+     { "user_id": 2,
+      "date_pret": "2024-09-18",
+      "date_retour": "2024-09-30",
       "type_pret": "emprunt",
       "etat": "en cours",
       "ligne_prets": [
         {
 
           "pret_id": 3,
-          "materiel_id": 2,
+          "materiel_id": 5,
           "quantite_preter": 1
         },
         {
@@ -63,12 +65,45 @@
           "pret_id": 3,
           "materiel_id": 1,
           "quantite_preter": 1
-        },
-        {
-      "created_at": "2024-09-18T13:49:37.000000Z",
-      "updated_at": "2024-09-18T13:49:37.000000Z"
-          "pret_id": 3,
-          "materiel_id": 2,
-          "quantite_preter": 1
         }
-      ]
+        ]
+    }
+
+"user_id": 2,
+      "date_pret": "2024-09-18",
+      "date_retour": "2024-09-30",
+      "type_pret": "emprunt",
+      "etat": "en cours",
+      "ligne_prets": [
+        {
+          "materiel_id": 3,
+          "quantite_preter": 1}
+        ]
+
+
+
+
+
+
+//assignation de users au posts
+"data": [1,2]
+//détacher des user au posts
+"user_ids" : [1,2]
+
+
+
+//associer un materiel a un poste
+"materiels" :[1,2]
+//detacher un materiel a un post
+"materiels" : [2]
+
+
+//authentification
+
+Authorization  Bearer 3|s79PHsY3GfiaLtPIY2SJwa8AkxYipk09R8jExAjpa5bf4d40
+
+Laravel Sanctum API series/laravel-api-app
+
+
+//historique
+

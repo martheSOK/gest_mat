@@ -18,6 +18,7 @@ class MaterielSeeder extends Seeder
         Materiel::create([
             "type_materiel_id" =>2,
             "post_id" => 1,
+            "salle_id" => 5,
             "etat" => "Présent fonctionnel" ,
             "localisation" =>"en magasin",
             "date_entree" => "12/08/2023",
@@ -30,6 +31,7 @@ class MaterielSeeder extends Seeder
         Materiel::create([
             "type_materiel_id" =>4,
             "post_id" => 1,
+            "salle_id" => 1,
             "etat" => "Présent fonctionnel" ,
             "localisation" =>"en utilisation",
             "date_entree" => "12/08/2024",

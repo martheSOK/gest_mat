@@ -17,17 +17,21 @@ class PostSeeder extends Seeder
 
         Post::create([
             "salle_id" => 1,
-            "nom" => "Post 101"
+            "nom" => "Post 101",
+            "etat" => "Disponible"
+
         ]);
 
         Post::create([
             "salle_id" => 1,
-            "nom" => "Post 102"
+            "nom" => "Post 102",
+            "etat" => "Disponible"
         ]);
 
         Post::create([
-            "salle_id" => 5,
-            "nom" => "Post 101"
+            "salle_id" => 2,
+            "nom" => "Post 101",
+            "etat" => "Disponible"
         ]);
     }
 }

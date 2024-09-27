@@ -8,7 +8,6 @@ use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Interfaces\PostRepositoryInterface;
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,27 +21,15 @@ class PostController extends Controller
         $this->postRepositoryInterface = $postRepositoryInterface;
     }
 
-    //private PostRepositoryInterface $postRepositoryInterface;
-
-    // public function __construct(PostRepositoryInterface $postRepositoryInterface)
-    // {
-    //     $this->postRepositoryInterface = $postRepositoryInterface;
-    // }
 
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-        // $posts=Post::all();
-        // return $posts ;
-
-
         $data = $this->postRepositoryInterface->index();
 
-        return ApiResponseClass::sendResponse(PostResource::collection($data),'',200);
-
+        return ApiResponseClass::sendResponse(PostResource::collection($data), '', 200);
     }
 
     /**
@@ -52,19 +39,19 @@ class PostController extends Controller
     {
         //
 
-        $details =[
+        $details = [
 
             'salle_id' => $request->salle_id,
-            'nom' => $request->nom
+            'nom' => $request->nom,
+            'etat' => $request->etat,
         ];
         DB::beginTransaction();
-        try{
-             $post = $this->postRepositoryInterface->store($details);
+        try {
+            $post = $this->postRepositoryInterface->store($details);
 
-             DB::commit();
-             return ApiResponseClass::sendResponse(new PostResource($post),'Post Create Successful',200);
-
-        }catch(\Exception $ex) {
+            DB::commit();
+            return ApiResponseClass::sendResponse(new PostResource($post), 'Post Create Successful', 200);
+        } catch (\Exception $ex) {
             DB::rollBack();  // Annuler la transaction en cas d'erreur
 
             // Log l'erreur pour mieux comprendre la cause
@@ -82,9 +69,8 @@ class PostController extends Controller
     {
         //
 
-        $un_post=$this->postRepositoryInterface->getById($post->id);
-        return ApiResponseClass::sendResponse(new PostResource($un_post),'',201);
-
+        $un_post = $this->postRepositoryInterface->getById($post->id);
+        return ApiResponseClass::sendResponse(new PostResource($un_post), '', 201);
     }
 
     /**
@@ -93,18 +79,18 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, Post $post)
     {
         //
-        $updateDetails=[
+        $updateDetails = [
 
             'salle_id' => $request->salle_id,
-            'nom' => $request->nom
+            'nom' => $request->nom,
+            'etat' => $request->etat,
         ];
         DB::beginTransaction();
-        try{
-            $post=$this->postRepositoryInterface->update($updateDetails,$post->id);
+        try {
+            $post = $this->postRepositoryInterface->update($updateDetails, $post->id);
             DB::commit();
-             return ApiResponseClass::sendResponse('Post Update Successful','',200);
-        }
-        catch(\Exception $ex) {
+            return ApiResponseClass::sendResponse('Post Update Successful', '', 200);
+        } catch (\Exception $ex) {
             DB::rollBack();  // Annuler la transaction en cas d'erreur
 
             // Log l'erreur pour mieux comprendre la cause
@@ -113,144 +99,152 @@ class PostController extends Controller
             // Retourne la réponse d'erreur
             return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
         }
-
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Post $post)
-    {
-        //
-        $this->postRepositoryInterface->delete($post->id);
+        {
+            // Vérifie si le post est utilisé dans la table materiels
+            $postEstUtilise = DB::table('materiels')
+                ->where('post_id', $post->id)
+                ->exists();  // Utilise exists() pour vérifier si le poste est référencé dans la table materiels
 
-        return ApiResponseClass::sendResponse('Post Delete Successful','',200);
-    }
-
-
-
-    // public function assigneUsers(Request $request, int $id){
-    //     //dd($request->all());
-    //     //Recuperation de la liste des user soumis
-    //     $data = $request->input("data");
-    //     //dd($data);
-    //     DB::beginTransaction();
-    //     try{
-    //         $this->postRepositoryInterface->assigneUsers($data , $id);
-    //         DB::commit();
-    //         return ApiResponseClass::sendResponse('Post asseigne Successful','',206);
-    //      }
-    //      catch(\Exception $ex) {
-    //         DB::rollBack();  // Annuler la transaction en cas d'erreur
-
-    //         // Log l'erreur pour mieux comprendre la cause
-    //         Log::error("Erreur lors de l'assignation du post: " . $ex->getMessage());
-
-    //         // Retourne la réponse d'erreur
-    //         return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
-    //     }
-    // }
-
-    public function avalabeAssigneUsers(array $data, int $postId){
-        // Parcourir les utilisateurs soumis
-        foreach ($data as $userId) {
-
-
-            // Vérifier si l'utilisateur a déjà un poste actif
-            $posteActif = $this->postRepositoryInterface->verifierPosteActif($userId);
-            if ($posteActif != null) {
-                //dd($posteActif->utilise);
-                // return response()->json([
-                //     'message' => "L'utilisateur $userId a déjà un poste actif.", //Souhaitez-vous désactiver l'ancien poste ?,
-                //     'user_id' => $userId,
-                //     'post_id_actif' => $posteActif->post_id,]
-                // );
-                //printf("L\'utilisateur $userId a déjà un poste actif.");
-                //return ApiResponseClass::sendResponse("L\'utilisateur $userId a déjà un poste actif.", '', 206);
-                return "L\'utilisateur $userId a déjà un poste actif.";
+            if (!$postEstUtilise) {
+                // Si aucun matériel ne fait référence à ce post, supprimer le post
+                $this->postRepositoryInterface->delete($post->id);
+                return ApiResponseClass::sendResponse('Post supprimé avec succès', '', 200);
             }
-            else{
 
-                    $this->postRepositoryInterface->assigneUsers($userId, $postId);
-                    DB::commit();
+            // Si des matériels sont référencés à ce post, renvoyer un message d'erreur
+            return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
+        }
 
-                    return ApiResponseClass::sendResponse('Post assigné avec succès', '', 206);
 
+
+
+
+
+
+    public function postsDisponible()
+        {
+
+            $postsDisponibles = Post::where('etat', '=' , 'Disponible')->get();
+
+            if ($postsDisponibles->isEmpty()) {
+                return response()->json(['message' => 'Aucun poste disponible.'], 404);
+            }
+
+            return response()->json($postsDisponibles);
+        }
+
+
+
+
+
+        public function postsPartiellementDisponible(){
+
+            $postsPartielDisponibles = Post::where('etat', '=','Partielement disponible')->get();
+            if ($postsPartielDisponibles->isEmpty()) {
+                return response()->json(['message' => 'Aucun poste Partielement disponible.'], 404);
+            }
+            return response()->json($postsPartielDisponibles);
+
+        }
+
+
+
+    public function assigneUsers(Request $request, int $post)
+    {
+        $userActifs = [];
+        $data = $request->input("data");
+        if (!is_array($data)) {
+            return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+        }
+        //dd($data);
+        foreach ($data as $key => $userId) {
+            $posteActif = $this->postRepositoryInterface->verifierPosteActif($userId);
+
+            if ($posteActif) {
+                // Ajouter l'utilisateur au tableau $userActifs
+                array_push($userActifs, $userId);
+
+                // Retirer l'utilisateur du tableau $data
+                unset($data[$key]);
             }
         }
 
-    }
+        // Optionnel : Réindexer le tableau $data
+        $data = array_values($data);
 
 
-    public function assigneUsers(Request $request, int $id) {
-        // Récupération de la liste des utilisateurs soumis
-        $data = $request->input("data");
-        $newUsersCount = count($data);
-
-        // Début de la transaction
+        $message = "";
         DB::beginTransaction();
-
         try {
-            // Vérifier combien d'utilisateurs sont déjà actifs sur ce poste
-            $activeUsersCount = DB::table('user_posts')
-                ->where('post_id', $id)
-                ->where('utilise', true)
-                ->count();
-
-            // Calculer combien d'utilisateurs peuvent encore être assignés (max 2)
-            $availableSlots = 2 - $activeUsersCount;
-
-            // Si aucun utilisateur ne peut être ajouté
-            if ($availableSlots <= 0) {
-                return ApiResponseClass::sendError("Le poste est déjà occupé par 2 utilisateurs.", 400);
+            // Appeler la méthode dans le repository pour assigner les utilisateurs et mettre à jour l'état du poste
+            $this->postRepositoryInterface->assigneUsers($data, $post);
+            DB::commit();
+            if ($userActifs) {
+                $message = count($userActifs)." user(s)  a ou ont un post actif" ;
+            } else {
+                $message ="Post assigné avec succès";
             }
+            return ApiResponseClass::sendResponse($userActifs, $message, 206);
 
-            // Si plus d'utilisateurs sont soumis que le nombre de places disponibles
-            if ($newUsersCount > $availableSlots) {
-                return ApiResponseClass::sendError("Il n'y a que $availableSlots place(s) disponible(s) pour ce poste.", 400);
-            }
-
-            // Assigner les utilisateurs
-
-           $this->avalabeAssigneUsers($data, $id);
-
-            // Validation de la transaction
 
         } catch (\Exception $ex) {
-            // Annuler la transaction en cas d'erreur
-            DB::rollBack();
-
-            // Log l'erreur pour analyse
-            Log::error("Erreur lors de l'assignation du poste : " . $ex->getMessage());
-
-            // Retourne la réponse d'erreur
-            return ApiResponseClass::rollback($ex->getMessage());
+            DB::rollBack();  // Annuler la transaction en cas d'erreur
+            Log::error("Erreur lors de l'assignation du post: " . $ex->getMessage());
+            return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
         }
+
     }
 
 
 
-    public function detachUsers(Request $request, int $postId)
-{
-    $userIds = $request->input('user_ids'); // Récupération des IDs des utilisateurs à détacher
 
-    DB::beginTransaction();
 
-    try {
-        // Appel au repository pour détacher les utilisateurs
-        $this->postRepositoryInterface->detachUsers($userIds, $postId);
+    public function detachUsers(Request $request, int $post)
+        {
+            $userIds = $request->input('user_ids'); // Récupération des IDs des utilisateurs à détacher
 
-        DB::commit();
+            if (!is_array($userIds)) {
+                return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+            }
 
-        return ApiResponseClass::sendResponse('Utilisateurs détachés avec succès', '', 200);
-    }
-    catch (\Exception $ex) {
-        DB::rollBack();
-        Log::error("Erreur lors du détachement des utilisateurs : " . $ex->getMessage());
-        return ApiResponseClass::rollback($ex->getMessage());
-    }
+            DB::beginTransaction();
+
+            try {
+                // Appel au repository pour détacher les utilisateurs
+                $this->postRepositoryInterface->detachUsers($userIds, $post);
+
+                // Compter le nombre d'utilisateurs restants liés à ce poste
+                $remainingUsersCount = DB::table('user_posts')
+                    ->where('post_id', $post)
+                    ->where('utilise', true) // Compte uniquement les utilisateurs actifs
+                    ->count();
+
+                // Déterminer l'état du poste
+                if ($remainingUsersCount === 0) {
+                    $status = 'Disponible'; // Aucun utilisateur actif
+                } else {
+                    $status = 'Partielement disponible'; // Au moins un utilisateur actif
+                }
+
+                // Mettre à jour l'état du poste
+                DB::table('posts')
+                    ->where('id', $post)
+                    ->update(['etat' => $status, 'updated_at' => now()]);
+
+                DB::commit();
+
+                return ApiResponseClass::sendResponse('Utilisateurs détachés avec succès', '', 200);
+            } catch (\Exception $ex) {
+                DB::rollBack();
+                Log::error("Erreur lors du détachement des utilisateurs : " . $ex->getMessage());
+                return ApiResponseClass::rollback($ex->getMessage());
+            }
+        }
+
 }
-
-
-}
-

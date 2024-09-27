@@ -23,9 +23,6 @@ class TypeMaterielController extends Controller
     public function index()
     {
         //
-    //    $type= Type_materiel::all();
-
-    //    return $type;
 
        $data = $this->type_materielRepositoryInterface->index();
 
@@ -59,14 +56,6 @@ class TypeMaterielController extends Controller
     /**
      * Display the specified resource.
      */
-    // public function show(Type_materiel $type_materiel)
-    // {
-    //     //
-
-    //     $un_type_materiel = $this->type_materielRepositoryInterface->getById($type_materiel->id);
-
-    //     return ApiResponseClass::sendResponse(new Type_materielResource($un_type_materiel),'',200);
-    // }
 
     public function show(Type_materiel $type_materiel)
     {
@@ -81,10 +70,6 @@ class TypeMaterielController extends Controller
 
         return ApiResponseClass::sendResponse(null, 'Type de matériel non trouvé ou supprimé.', 404);
     }
-
-
-
-
 
     /**
      * Update the specified resource in storage.
@@ -113,11 +98,20 @@ class TypeMaterielController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Type_materiel $type_materiel)
-    {
-        //
+        {
+            // Vérifie si le type de matériel est utilisé dans la table materiels
+            $materielExiste = DB::table('materiels')
+                ->where('type_materiel_id', $type_materiel->id)
+                ->exists();  
 
-        $this->type_materielRepositoryInterface->delete($type_materiel->id);
+            if (!$materielExiste) {
+                // Si aucun matériel n'est référencé, supprimer le type de matériel
+                $this->type_materielRepositoryInterface->delete($type_materiel->id);
+                return ApiResponseClass::sendResponse('Type de matériel supprimé avec succès', '', 200);
+            }
 
-        return ApiResponseClass::sendResponse('material type Delete Successful','',204);
-    }
+            // Si des matériels sont référencés, renvoyer un message d'erreur
+            return ApiResponseClass::sendResponse('Erreur : Action non permise. Ce type de matériel est en cours d’utilisation.', '', 403);
+        }
+
 }

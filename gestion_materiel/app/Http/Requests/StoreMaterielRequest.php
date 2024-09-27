@@ -27,6 +27,7 @@ class StoreMaterielRequest extends FormRequest
         return [
             'type_materiel_id' => 'required|integer|exists:type_materiels,id',
             'post_id' => 'nullable|integer',
+            'salle_id' => 'nullable|integer|exists:salles,id',
             'etat' => 'required|string|max:255',
             'localisation' => 'required|string|max:255',
             'date_entree' => 'required|date|before_or_equal:today',
@@ -48,6 +49,9 @@ class StoreMaterielRequest extends FormRequest
             'type_materiel_id.required' => 'Le type de matériel est obligatoire.',
             'type_materiel_id.integer' => 'L\'ID du type de matériel doit être un entier valide.',
             'type_materiel_id.exists' => 'Le type de matériel sélectionné n\'existe pas.',
+            //'salle_id.required' => 'Le type de matériel est obligatoire.',
+            'salle_id.integer' => 'L\'ID du type de matériel doit être un entier valide.',
+            'salle_id.exists' => 'Le type de matériel sélectionné n\'existe pas.',
             'etat.required' => 'L\'état du matériel est obligatoire.',
             'localisation.required' => 'La localisation est obligatoire.',
             'localisation.max' => 'La localisation ne peut pas dépasser 255 caractères.',

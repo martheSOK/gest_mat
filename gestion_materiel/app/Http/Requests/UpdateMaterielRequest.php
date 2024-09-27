@@ -26,19 +26,19 @@ class UpdateMaterielRequest extends FormRequest
     {
         return [
             'type_materiel_id' => 'required|integer|exists:type_materiels,id',
+            'post_id' => 'nullable|integer',
+            'salle_id' => 'nullable|integer|exists:salles,id',
             'etat' => 'required|string|max:255',
             'localisation' => 'required|string|max:255',
             'date_entree' => 'required|date|before_or_equal:today',
-            'numero_serie' => ['required','string','min:10','max:100',
-                // Ignore the current record during uniqueness check
+            'date_sortie' => 'nullable|date',
+            'numero_serie' => [
+                'required',
+                'string',
+                'min:10',
+                'max:100',
+                 // Ignore l'enregistrement actuel
                 Rule::unique('materiels', 'numero_serie')->ignore($this->route('materiel')),
-            ],
-            'date_sortie' => ['nullable','date',
-                function ($attribute, $value, $fail) {
-                    if ($value && $this->input('date_entree') > $value) {
-                        $fail('La date de sortie doit être postérieure à la date d\'entrée.');
-                    }
-                },
             ],
         ];
     }
@@ -52,6 +52,9 @@ class UpdateMaterielRequest extends FormRequest
             'type_materiel_id.required' => 'Le type de matériel est obligatoire.',
             'type_materiel_id.integer' => 'L\'ID du type de matériel doit être un entier valide.',
             'type_materiel_id.exists' => 'Le type de matériel sélectionné n\'existe pas.',
+            //'salle_id.required' => 'Le type de matériel est obligatoire.',
+            'salle_id.integer' => 'L\'ID du type de matériel doit être un entier valide.',
+            'salle_id.exists' => 'Le type de matériel sélectionné n\'existe pas.',
             'etat.required' => 'L\'état du matériel est obligatoire.',
             'localisation.required' => 'La localisation est obligatoire.',
             'localisation.max' => 'La localisation ne peut pas dépasser 255 caractères.',
@@ -65,6 +68,7 @@ class UpdateMaterielRequest extends FormRequest
             'date_sortie.date' => 'La date de sortie doit être une date valide.',
         ];
     }
+
 
     /**
      * Handle a failed validation attempt.

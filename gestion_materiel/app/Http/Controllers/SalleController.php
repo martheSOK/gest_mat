@@ -104,10 +104,23 @@ class SalleController extends Controller
      */
     public function destroy(Salle $salle)
     {
-        //
-        $this->salleRepositoryInterface->delete($salle->id);
+        // Vérifie si la salle est utilisée dans la table materiels ou posts
+        $salleEstUtiliseeDansMateriels = DB::table('materiels')
+            ->where('salle_id', $salle->id)
+            ->exists(); // Vérifie dans la table materiels
 
-        return ApiResponseClass::sendResponse('Salle Delete Successful','',200);
+        $salleEstUtiliseeDansPosts = DB::table('posts')
+            ->where('salle_id', $salle->id)
+            ->exists(); // Vérifie dans la table posts
 
+        // Si la salle n'est référencée ni dans materiels ni dans posts, on peut la supprimer
+        if (!$salleEstUtiliseeDansMateriels && !$salleEstUtiliseeDansPosts) {
+            $this->salleRepositoryInterface->delete($salle->id);
+            return ApiResponseClass::sendResponse('Salle supprimée avec succès', '', 200);
+        }
+
+        // Si la salle est référencée dans l'une des tables, renvoyer un message d'erreur
+        return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
     }
+
 }

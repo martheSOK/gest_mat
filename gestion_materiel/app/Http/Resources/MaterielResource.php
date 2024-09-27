@@ -18,6 +18,7 @@ class MaterielResource extends JsonResource
             'id' =>$this->id,
             'type_materiel_id' =>$this->type_materiel_id,
             'post_id' =>$this->post_id,
+            'salle_id' =>$this->salle_id,
             'etat' =>$this->etat,
             'localisation' => $this->localisation,
             'date_entree' => $this->date_entree,

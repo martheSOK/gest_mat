@@ -20,7 +20,9 @@ class UserResource2 extends JsonResource
             'prenom' => $this->prenom,
             'contact' => $this->contact,
             'email' =>$this->email,
-            "post_id" =>$this->post_id
+            "post_id" =>$this->post_id,
+           // Ajouter le token si disponible dans la resource
+           'token' => $this->when(isset($this->token), $this->token),
         ];
     }
 }

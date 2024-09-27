@@ -15,6 +15,7 @@ class Post extends Model
     protected $fillable=[
         'salle_id',
         'nom',
+        'etat'
 
     ];
 

@@ -26,12 +26,10 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'contact' => 'required|string|max:15|unique:users,contact',
+            'contact' => 'required|string|regex:/^[0-9]+$/|max:15',
             'email' => 'required|email|max:255|unique:users,email',
-
-            'password' => 'required|string|min:8',  // Validation du mot de passe
-
-            //'post_id' => 'nullable|exists:posts,id',  // Si `post_id` est optionnel
+            'password' => 'required|string|min:8|confirmed',
+            //'post_id' => 'nullable|exists:posts,id',
         ];
     }
 
@@ -51,22 +49,20 @@ class UpdateUserRequest extends FormRequest
 
             'contact.required' => 'Le contact est obligatoire.',
             'contact.string' => 'Le contact doit être une chaîne de caractères.',
+            'contact.regex' => 'Le contact doit contenir uniquement des chiffres.',
             'contact.max' => 'Le contact ne peut pas dépasser 15 caractères.',
-            'contact.unique' => 'Ce contact est déjà utilisé par un autre utilisateur.',
 
             'email.required' => 'L\'email est obligatoire.',
             'email.email' => 'L\'email doit être une adresse email valide.',
             'email.max' => 'L\'email ne peut pas dépasser 255 caractères.',
             'email.unique' => 'Cet email est déjà utilisé par un autre utilisateur.',
 
-            //'post_id.exists' => 'Le poste sélectionné n\'existe pas.',
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.string' => 'Le mot de passe doit être une chaîne de caractères.',
             'password.min' => 'Le mot de passe doit comporter au moins 8 caractères.',
-            // 'password.confirmed' => 'La confirmation du mot de passe ne correspond pas'
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.'
         ];
     }
-
     /**
      * Gestion des échecs de validation.
      */

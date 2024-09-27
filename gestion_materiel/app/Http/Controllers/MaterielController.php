@@ -10,6 +10,7 @@ use App\Interfaces\MaterielRepositoryInterface;
 use App\Models\Materiel;
 use App\Models\Post;
 use App\Models\Salle;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -238,64 +239,39 @@ class MaterielController extends Controller
 
 
         public function detachMaterielsFromPost(Request $request)
-            {
-                DB::beginTransaction();
-                try {
-                    // Récupérer les IDs des matériels depuis le body de la requête
-                    $materielIds = $request->input('materiels'); // Tableau d'IDs de matériels
-                    if (!is_array($materielIds)) {
-                        return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
-                    }
-                    // Récupérer l'ID de la salle avec la nomination "magasin"
-                    $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
-                    $salleMagasinId = $salleMagasin->id;
+{
+    DB::beginTransaction();
+    try {
+        // Récupérer les IDs des matériels depuis le body de la requête
+        $materielIds = $request->input('materiels');
+        if (!is_array($materielIds)) {
+            return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+        }
 
-                    $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId);
+        // Tenter de récupérer la salle "magasin"
+        try {
+            $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
+        }
 
-                    DB::commit();
+        // Récupérer l'ID de la salle magasin
+        $salleMagasinId = $salleMagasin->id;
 
-                    // Retourner une réponse de succès
-                    return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
-                }
-                catch (\Exception $ex) {
-                    DB::rollBack();
-                    Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
-                    return ApiResponseClass::rollback($ex->getMessage());
-                }
-            }
+        // Appel au repository pour détacher les matériels
+        $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId);
 
+        DB::commit();
 
+        // Retourner une réponse de succès
+        return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
+    } catch (\Exception $ex) {
+        DB::rollBack();
+        Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
+        return ApiResponseClass::rollback($ex->getMessage());
+    }
+}
 
-            public function AssignMaterials()
-            {
-                try {
-                    $materiels = Materiel::where('etat', 'Présent fonctionnel')
-                                         ->where('localisation', 'en magasin')
-                                         ->get();
-
-                    // Vérifier si des matériels ont été trouvés
-                    if ($materiels->isEmpty()) {
-                        return response()->json([
-                            'status' => 'error',
-                            'message' => 'Aucun matériel trouvé avec l\'état "Présent fonctionnel" et la localisation "en magasin".'
-                        ], 404);
-                    }
-
-                    // Retourner les matériels trouvés
-                    return response()->json([
-                        'status' => 'success',
-                        'materiels' => $materiels
-                    ], 200);
-                }
-                catch (\Exception $ex) {
-                    // En cas d'erreur, retourner un message d'erreur
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Une erreur s\'est produite lors de la récupération des matériels.',
-                        'details' => $ex->getMessage()
-                    ], 500);
-                }
-            }
 
 
 

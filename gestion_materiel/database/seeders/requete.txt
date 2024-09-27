@@ -92,6 +92,10 @@
 
 
 
+//associer un materiel a un poste
+"materiels" :[1,2]
+//detacher un materiel a un post
+"materiels" : [2]
 
 
 //authentification

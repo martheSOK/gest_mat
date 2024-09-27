@@ -7,8 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h3>Methode pour créer un compte</h3>
-    <h2>Register</h2>
+    <h3>Methode pour modifer un compte utilisateur</h3>
+
+    <h2>Update</h2>
 
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
@@ -19,13 +20,35 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/register</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">POST</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/users/{id}</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">PUT</td>
             </tr>
         </tbody>
     </table>
 
-    <h2>Données à envoyer</h2>
+    <h2>paramètre url</h2>
+    <table style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid lightgray; padding: 8px;">Nom</th>
+                <th style="border: 1px solid lightgray; padding: 8px;">Type</th>
+                <th style="border: 1px solid lightgray; padding: 8px;">Est requis</th>
+                <th style="border: 1px solid lightgray; padding: 8px;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="border: 1px solid lightgray; padding: 8px;">id</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">integer</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">oui</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">L'identifiant du user qu'on veux modifier</td>
+            </tr>
+        <tbody>
+    </table>
+
+
+
+    <h2>Données à renseigner au niveau du formulaire</h2>
 
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
@@ -74,10 +97,9 @@
     <br>
     <br>
 
-    <h3>Methode pour se connecter à un compte</h3>
 
-    <h2>Login</h2>
-
+    <h3>Methode pour afficher un compte utilisateur donnée</h3>
+    <p>Show</p>
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr>
@@ -87,13 +109,13 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/login</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">POST</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/users/{id}</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">GET</td>
             </tr>
         </tbody>
     </table>
 
-    <h2>Données à envoyer</h2>
+    <h2>paramètre url</h2>
 
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
@@ -106,27 +128,21 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">email</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">string</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">id</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">integer</td>
                 <td style="border: 1px solid lightgray; padding: 8px;">oui</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">L'adresse de courrier électronique</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">L'identifiant du user qu'on veux voir le detaille</td>
             </tr>
-            <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">password</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">string</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">oui</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">Le mot de passe pour le compte</td>
-            </tr>
+
         </tbody>
     </table>
-<br>
-<br>
-<br>
-<br>
-    <h3>Methode pour se déconnecter</h3>
+    <br>
+    <br>
+    <br>
+    <br>
 
-    <h2>Logout</h2>
-
+    <h3>Methode pour supprimer un compte utilisateur donnée</h3>
+    <p>Delete</p>
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr>
@@ -136,13 +152,12 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/logout</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">POST</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">http://127.0.0.1:8000/api/users/{id}</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">DELETE</td>
             </tr>
         </tbody>
     </table>
-
-    <h2>Données à envoyer</h2>
+    <h2>paramètre url</h2>
 
     <table style="border-collapse: collapse; width: 100%;">
         <thead>
@@ -155,10 +170,10 @@
         </thead>
         <tbody>
             <tr>
-                <td style="border: 1px solid lightgray; padding: 8px;">request</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">Request</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">id</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">integer</td>
                 <td style="border: 1px solid lightgray; padding: 8px;">oui</td>
-                <td style="border: 1px solid lightgray; padding: 8px;">Le token du user connecter</td>
+                <td style="border: 1px solid lightgray; padding: 8px;">L'identifiant du user qu'on veux supprimer</td>
             </tr>
 
         </tbody>
@@ -166,3 +181,4 @@
 
 </body>
 </html>
+<?php /**PATH /home/david/Bureau/s4/projet_ifnti/project/gest_mat/gestion_materiel/resources/views/documentation/Usermethode.blade.php ENDPATH**/ ?>

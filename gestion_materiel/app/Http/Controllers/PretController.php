@@ -123,39 +123,63 @@ class PretController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdatePretRequest $request, Pret $pret)
-{
-    // Récupérer les détails du prêt à mettre à jour
-    $updatedetails = [
-        'user_id' => $request->user_id,
-        'date_pret' => $request->date_pret,
-        'date_retour' => $request->date_retour,
-        'type_pret' => $request->type_pret,
-        'etat' => $request->etat,
-    ];
+    {
+        // Récupérer les détails du prêt à mettre à jour
+        $updatedetails = [
+            'user_id' => $request->user_id,
+            'date_pret' => $request->date_pret,
+            'date_retour' => $request->date_retour,
+            'type_pret' => $request->type_pret,
+            'etat' => $request->etat,
+        ];
 
-    DB::beginTransaction();
+        DB::beginTransaction();
 
-    try {
-        // Mettre à jour les informations du prêt
-        $pret->update($updatedetails);
+        try {
+            // Mettre à jour les informations du prêt
+            $pret->update($updatedetails);
 
-        // Parcourir les lignes de prêt
-        $existingLignePretIds = $pret->ligne_prets->pluck('id')->toArray();// on extraire les valeurs du champ id(pluck()) de chaque ligne de prêt associée à ce prêt et on converti la collection retourner en tableau (toArray())
-        $newLignePretIds = [];
-
-        foreach ($request->ligne_prets as $ligne) {
-            if (isset($ligne['id'])) {
-                // Mettre à jour une ligne de prêt existante
-                $lignePret = LignePret::find($ligne['id']);
-                if ($lignePret) {
-                    $materiel = Materiel::find($lignePret['materiel_id']);
-                    if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
-                        // Ensuite, créer la ligne de prêt
+            // Parcourir les lignes de prêt
+            // on extraire les valeurs du champ id(pluck()) de chaque ligne de prêt associée à ce prêt et on converti la collection retourner en tableau (toArray())
+            $existingLignePretIds = $pret->ligne_prets->pluck('id')->toArray();
+            $newLignePretIds = [];
+            foreach ($request->ligne_prets as $ligne) {
+                if (isset($ligne['id'])) {
+                    // Mettre à jour une ligne de prêt existante
+                    $lignePret = LignePret::find($ligne['id']);
+                    if ($lignePret) {
                         $lignePret->update([
                             'materiel_id' => $ligne['materiel_id'],
                             'quantite_preter' => $ligne['quantite_preter'],
                         ]);
                         $newLignePretIds[] = $lignePret->id;
+
+                    }
+                }
+                else {
+
+                    // Ajouter une nouvelle ligne de prêt
+                    //avant d'ajouter la nouvele ligne je verifie si le materiel de cette ligne est prêtable
+                    $materiel = Materiel::find($ligne['materiel_id']);
+                    if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
+                        // Ensuite, créer la ligne de prêt
+                        LignePret::create([
+                            'pret_id' => $pret->id,
+                            'materiel_id' => $ligne['materiel_id'],
+                            'quantite_preter' => $ligne['quantite_preter'],
+                        ]);
+
+                        if ($request->type_pret == 'emprunt') {
+                                $materiel->etat = 'Absent';
+                                $materiel->localisation = 'en location';
+                                $materiel->salle_id = null;
+                            } elseif ($request->type_pret == 'réparation') {
+                                $materiel->etat = 'Absent';
+                                $materiel->localisation = 'en reparation';
+                                $materiel->salle_id = null;
+                            }
+                            $materiel->save();
+
                     }
                     else {
                         throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
@@ -163,43 +187,23 @@ class PretController extends Controller
 
                 }
             }
-             else {
 
-                // Ajouter une nouvelle ligne de prêt
-                //avant d'ajouter la nouvele ligne je verifie si le materiel de cette ligne est prêtable
-                $materiel = Materiel::find($ligne['materiel_id']);
-                if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
-                    // Ensuite, créer la ligne de prêt
-                    $newLignePret = LignePret::create([
-                        'pret_id' => $pret->id,
-                        'materiel_id' => $ligne['materiel_id'],
-                        'quantite_preter' => $ligne['quantite_preter'],
-                    ]);
-                    $newLignePretIds[] = $newLignePret->id;
-                }
-                else {
-                    throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
-                }
+            // Supprimer les lignes de prêt qui ne sont plus présentes
+            //La fonction array_diff() compare deux tableaux et retourne les éléments qui sont dans le premier tableau mais pas dans le second.
+            $lignesToDelete = array_diff($existingLignePretIds, $newLignePretIds);
+            LignePret::destroy($lignesToDelete);
 
-            }
+            DB::commit();
+
+            return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt mis à jour avec succès', 200);
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
+            Log::error("Erreur lors de la mise à jour du prêt: " . $ex->getMessage());
+            return ApiResponseClass::rollback($ex->getMessage());
         }
-
-        // Supprimer les lignes de prêt qui ne sont plus présentes
-        //La fonction array_diff() compare deux tableaux et retourne les éléments qui sont dans le premier tableau mais pas dans le second.
-        $lignesToDelete = array_diff($existingLignePretIds, $newLignePretIds);
-        LignePret::destroy($lignesToDelete);
-
-        DB::commit();
-
-        return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt mis à jour avec succès', 200);
-
-    } catch (\Exception $ex) {
-        DB::rollBack();
-
-        Log::error("Erreur lors de la mise à jour du prêt: " . $ex->getMessage());
-        return ApiResponseClass::rollback($ex->getMessage());
     }
-}
 
     /**
      * Remove the specified resource from storage.

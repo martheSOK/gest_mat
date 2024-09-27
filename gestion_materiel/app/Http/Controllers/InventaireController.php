@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Interfaces\InventaireRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class InventaireController extends Controller
 {
@@ -22,16 +23,26 @@ class InventaireController extends Controller
         }
 
 
-        
-    public function getUsersUsingMateriel(Request $request, $materielId)
+
+    public function getUsersUsingMateriel(Request $request, int $materielid)
         {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'date_debut' => 'required|date',
                 'date_fin' => 'required|date|after_or_equal:date_debut',
             ]);
 
+            // Vérifier si la validation échoue
+            if ($validator->fails()) {
+                // Retourner une réponse JSON personnalisée avec les erreurs
+                return response()->json([
+                    'status' => 'erreur',
+                    'message' => 'La validation a échoué.',
+                    'erreurs' => $validator->errors(),
+                ], 422); // Code 422 pour "Unprocessable Entity"
+            }
+
             $users = $this->inventaireInerface->getUsersByMaterielAndPeriod(
-                $materielId,
+                $materielid,
                 $request->input('date_debut'),
                 $request->input('date_fin')
             );

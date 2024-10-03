@@ -239,41 +239,44 @@ class MaterielController extends Controller
 
 
         public function detachMaterielsFromPost(Request $request)
-{
-    DB::beginTransaction();
-    try {
-        // Récupérer les IDs des matériels depuis le body de la requête
-        $materielIds = $request->input('materiels');
-        if (!is_array($materielIds)) {
-            return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+        {
+            DB::beginTransaction();
+            try {
+                // Récupérer les IDs des matériels depuis le body de la requête
+                $materielIds = $request->input('materiels');
+                if (!is_array($materielIds)) {
+                    return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+                }
+
+                // Récupérer l'état et la localisation depuis la requête
+                $etat = $request->input('etat');
+                $localisation = $request->input('localisation');
+
+                // Tenter de récupérer la salle "magasin"
+                try {
+                    $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
+                }
+                catch (ModelNotFoundException $e) {
+                    return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
+                }
+
+                // Récupérer l'ID de la salle magasin
+                $salleMagasinId = $salleMagasin->id;
+
+                // Appel au repository pour détacher les matériels
+                $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId, $etat, $localisation);
+
+                DB::commit();
+
+                // Retourner une réponse de succès
+                return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
+            }
+            catch (\Exception $ex) {
+                DB::rollBack();
+                Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
+                return ApiResponseClass::rollback($ex->getMessage());
+            }
         }
-
-        // Tenter de récupérer la salle "magasin"
-        try {
-            $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
-        }
-
-        // Récupérer l'ID de la salle magasin
-        $salleMagasinId = $salleMagasin->id;
-
-        // Appel au repository pour détacher les matériels
-        $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId);
-
-        DB::commit();
-
-        // Retourner une réponse de succès
-        return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
-    } catch (\Exception $ex) {
-        DB::rollBack();
-        Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
-        return ApiResponseClass::rollback($ex->getMessage());
-    }
-}
-
-
-
 
 
 

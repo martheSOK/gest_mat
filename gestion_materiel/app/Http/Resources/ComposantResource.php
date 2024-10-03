@@ -18,6 +18,7 @@ class ComposantResource extends JsonResource
             'id' =>$this->id,
             'materiel_id' => $this->materiel_id,
             'designation' =>$this->designation,
+            'created_at' => $this->created_at
 
         ];
 

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('etat' ,["en cours" , "restitué"]);
             $table->timestamps();
 
-            // $table->foreign("materiel_id")->references("id")->on("materiels");
+
             $table->foreign("user_id")->references("id")->on("users");
 
         });

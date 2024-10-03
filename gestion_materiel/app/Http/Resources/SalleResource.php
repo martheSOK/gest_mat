@@ -19,6 +19,7 @@ class SalleResource extends JsonResource
             'id' =>$this->id,
             'nomination' => $this->nomination,
             'nombre_post'=>$this->nombre_post,
+            'created_at' => $this->created_at
 
         ];
     }

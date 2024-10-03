@@ -23,7 +23,8 @@ class MaterielResource extends JsonResource
             'localisation' => $this->localisation,
             'date_entree' => $this->date_entree,
             'date_sortie' => $this->date_sortie,
-            'numero_serie' => $this->numero_serie
+            'numero_serie' => $this->numero_serie,
+            'created_at' => $this->created_at
         ];
 
     }

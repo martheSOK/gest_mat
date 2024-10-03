@@ -23,6 +23,7 @@ class PretResource extends JsonResource
         'date_retour'  => $this->date_retour,
         'type_pret'  => $this->type_pret,
         'etat' => $this->etat,
+        'created_at' => $this->created_at,
 
         // Inclure les lignes de prêt
         'ligne_prets' => LignePretResource::collection($this->whenLoaded('ligne_prets')) // Utilisation d'une ressource pour les lignes de prêt

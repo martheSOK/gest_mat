@@ -9,8 +9,13 @@ use Illuminate\Http\Request;
 
 class MaterielRepository implements MaterielRepositoryInterface
 {
+
+    // Exemple d'une méthode dans un contrôleur pour récupérer les matériels
+
+
     public function index(){
-        return Materiel::all();
+        $materiels = Materiel::with('type_materiel')->get();
+        return $materiels;
     }
 
     public function getById($id){
@@ -58,29 +63,36 @@ class MaterielRepository implements MaterielRepositoryInterface
 
 
 
-    public function detachMaterielsFromPost(array $materiel_ids, int $salleMagasinId)
-    {
-        // Récupérer tous les matériels à détacher
-        $materiels = Materiel::whereIn('id', $materiel_ids)->get();
+    public function detachMaterielsFromPost(array $materiel_ids, int $salleMagasinId, string $etat, string $localisation)
+{
+    // Récupérer tous les matériels à détacher
+    $materiels = Materiel::whereIn('id', $materiel_ids)->get();
 
+    // Valider l'état et la localisation
+    $etatsValides = ['Présent fonctionnel', 'Présent hors service', 'Absent'];
+    $localisationsValides = ['en magasin', 'en utilisation', 'en reparation', 'en location', 'don'];
 
+    if (!in_array($etat, $etatsValides) || !in_array($localisation, $localisationsValides)) {
+        throw new \InvalidArgumentException("L'état ou la localisation fournis ne sont pas valides.");
+    }
 
-        foreach ($materiels as $materiel) {
-            // Vérifier si le matériel est déjà associé à un poste
-            if ($materiel->post_id !== null) {
-                // Détacher le matériel du poste
-                $materiel->post()->dissociate();
+    foreach ($materiels as $materiel) {
+        // Vérifier si le matériel est déjà associé à un poste
+        if ($materiel->post_id !== null) {
+            // Détacher le matériel du poste
+            $materiel->post()->dissociate();
 
-                // Changer la localisation en "en magasin"
-                $materiel->localisation = 'en magasin';
+            // Mettre à jour la localisation et l'état selon les arguments fournis
+            $materiel->localisation = $localisation;
+            $materiel->etat = $etat;
 
-                // Changer l'ID de la salle en celui de la salle "magasin"
-                $materiel->salle_id = $salleMagasinId;
+            // Changer l'ID de la salle en celui de la salle "magasin"
+            $materiel->salle_id = $salleMagasinId;
 
-                // Enregistrer les modifications
-                $materiel->save();
-            }
+            // Enregistrer les modifications
+            $materiel->save();
         }
     }
+}
 
 }

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function Register() {
 
-    //const navigate = userNavigate()
     const {setToken} =useContext(AppContext)
     const navigate = useNavigate();
 
@@ -39,9 +38,9 @@ export default function Register() {
           
             localStorage.setItem("token",data.token);
             setToken(data.token);
+            console.log(data.token);
+            navigate("/layout");
             
-            navigate("/");
-            //console.log(data)
         }     
         
     }

@@ -6,6 +6,7 @@ use App\Interfaces\PostRepositoryInterface;
 use App\Models\Post;
 use App\Models\UserPost;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -44,9 +45,23 @@ class PostRepository implements PostRepositoryInterface
 
     public function assigneUsers($data, $post)
     {
+        // Vérifier combien d'utilisateurs sont déjà assignés à ce poste avec utilise = true
+        $activeUsersCount = DB::table('user_posts')
+            ->where('post_id', $post)
+            ->where('utilise', true)
+            ->count();
+        //dd($activeUsersCount);
+         // Ajout du log pour vérifier le nombre d'utilisateurs actifs avant l'assignation
+        Log::info('Nombre d\'utilisateurs actifs avant l\'assignation : ' . $activeUsersCount);
+
+
+        // Si le poste est déjà occupé par deux utilisateurs, renvoyer un message d'erreur
+        if ($activeUsersCount >= 2) {
+            throw new \Exception("Le poste est déjà occupé par deux utilisateurs.");
+        }
+
         // Parcourir les utilisateurs soumis
         foreach ($data as $userId) {
-            //dd($userId);
             // Vérifiez si l'utilisateur est déjà assigné à ce poste
             $userPost = DB::table('user_posts')
                 ->where('post_id', $post)
@@ -66,24 +81,25 @@ class PostRepository implements PostRepositoryInterface
                 DB::table('user_posts')->insert([
                     'post_id' => $post,
                     'user_id' => $userId,
-                    'utilise' => true, // Définit 'utilise' à true pour indiquer que l'utilisateur utilise le poste
+                    'utilise' => true,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             }
-        }
 
-        // Vérifier combien d'utilisateurs sont assignés à ce poste avec utilise = true
-        $activeUsersCount = DB::table('user_posts')
-            ->where('post_id', $post)
-            ->where('utilise', true)
-            ->count();
+            // Mettre à jour le nombre d'utilisateurs actifs
+            $activeUsersCount++;
+            //dd($activeUsersCount);
+            // Si on dépasse 2 utilisateurs actifs, arrêter l'assignation et renvoyer un message
+            if ($activeUsersCount >2) {
+                throw new \Exception("Le poste ne peut pas être assigné à plus de deux utilisateurs.");
+            }
+        }
 
         // Mettre à jour l'état du poste en fonction du nombre d'utilisateurs actifs
         if ($activeUsersCount === 2) {
             // Si 2 utilisateurs sont assignés, marquer le poste comme "Occupé"
             DB::table('posts')->where('id', $post)->update(['etat' => 'Occupe']);
-            DB::commit();
         }
         elseif ($activeUsersCount === 1) {
             // Si 1 utilisateur est assigné, marquer le poste comme "Partiellement disponible"
@@ -93,6 +109,7 @@ class PostRepository implements PostRepositoryInterface
             // Si aucun utilisateur n'est assigné, remettre l'état à "Disponible"
             DB::table('posts')->where('id', $post)->update(['etat' => 'Disponible']);
         }
+        //dd($activeUsersCount);
     }
 
 public function detachUsers(array $userIds, int $post)

@@ -103,24 +103,36 @@ class SalleController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Salle $salle)
-    {
-        // Vérifie si la salle est utilisée dans la table materiels ou posts
-        $salleEstUtiliseeDansMateriels = DB::table('materiels')
-            ->where('salle_id', $salle->id)
-            ->exists(); // Vérifie dans la table materiels
+{
+    // Vérifie si la salle est utilisée dans les tables materiels ou posts
+    $salleEstUtiliseeDansMateriels = DB::table('materiels')
+        ->where('salle_id', $salle->id)
+        ->exists();
 
-        $salleEstUtiliseeDansPosts = DB::table('posts')
-            ->where('salle_id', $salle->id)
-            ->exists(); // Vérifie dans la table posts
+    $salleEstUtiliseeDansPosts = DB::table('posts')
+        ->where('salle_id', $salle->id)
+        ->exists();
 
-        // Si la salle n'est référencée ni dans materiels ni dans posts, on peut la supprimer
-        if (!$salleEstUtiliseeDansMateriels && !$salleEstUtiliseeDansPosts) {
-            $this->salleRepositoryInterface->delete($salle->id);
-            return ApiResponseClass::sendResponse('Salle supprimée avec succès', '', 200);
-        }
-
-        // Si la salle est référencée dans l'une des tables, renvoyer un message d'erreur
-        return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
+    // Si la salle n'est référencée ni dans materiels ni dans posts, on peut la supprimer
+    if (!$salleEstUtiliseeDansMateriels && !$salleEstUtiliseeDansPosts) {
+        $this->salleRepositoryInterface->delete($salle->id);
+        return ApiResponseClass::sendResponse('Salle supprimée avec succès', '', 200);
     }
+
+    // Renvoie un message d'erreur spécifique si la salle est utilisée
+    $message = 'Impossible de supprimer la salle. Elle est référencée dans ';
+    if ($salleEstUtiliseeDansMateriels) {
+        $message .= 'la table matériels';
+    }
+    if ($salleEstUtiliseeDansPosts) {
+        if ($salleEstUtiliseeDansMateriels) {
+            $message .= ' et ';
+        }
+        $message .= 'la table posts';
+    }
+    $message .= '.';
+
+    return ApiResponseClass::sendResponse($message, '', 403);
+}
 
 }

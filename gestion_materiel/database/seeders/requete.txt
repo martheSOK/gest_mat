@@ -26,7 +26,7 @@
     "date_pret" : "2024-09-15",
     "date_retour_prevu" : "2024-09-26",
     "date_retour_effective" : "2024-09-28",
-    "type_pret" : "pret",
+    "type_pret" : "emprunt",
     "eta" : "en cours"
 
 

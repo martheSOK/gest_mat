@@ -21,8 +21,8 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('type_materiels' ,TypeMaterielController::class);
 
 // //route pour assigné et détacher le matériel a un post
-Route::post('posts/{post_id}/assign-materiels', [MaterielController::class, 'assignToPoste']);
-Route::post('materiel/detach', [MaterielController::class, 'detachMaterielsFromPost']);
+Route::post('materiel/assign/{materiel_id}', [MaterielController::class, 'assignToPoste']);
+Route::post('materiels/detach/{materiel_id}', [MaterielController::class, 'detachMaterielFromPost']);
 
 Route::apiResource('materiels' ,MaterielController::class);
 Route::apiResource('composants' ,ComposantController::class);
@@ -35,10 +35,14 @@ Route::apiResource('prets' ,PretController::class);
 Route::get('post/disponibles', [PostController::class,'postsDisponible']);
 Route::get('post/partiellementDisponibles', [PostController::class,'postsPartiellementDisponible']);
 Route::get('materiel/assignables', [MaterielController::class, 'AssignMaterials']);
+Route::get('/materiels/{materiel_id}/post', [MaterielController::class, 'getPostByMateriel']);
 
 
-Route::post('posts/{post}/assigne/users' ,[PostController::class,'assigneUsers']);
-Route::post('posts/{post}/detach/users' ,[PostController::class,'detachUsers']);
+Route::post('posts/assigne/users/{post}' ,[PostController::class,'assigneUsers']);
+Route::post('posts/detach/users/{post}' ,[PostController::class,'detachUsers']);
+Route::get('posts/users/{post}',[PostController::class,'getUsersByPost']);
+Route::get('/posts/without-materiel/{materiel_id}', [PostController::class, 'getPostsWithoutMateriel']);
+
 
 
 //route pour la gestion des lignes de prêt

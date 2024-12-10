@@ -132,151 +132,242 @@ class MaterielController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Materiel $materiel)
-{
-    DB::beginTransaction();
-    try {
-        $this->materielRepositoryInterface->delete($materiel->id);
-        DB::commit();
-        return ApiResponseClass::sendResponse('Matériel Delete Successful','',200);
-    }
-    catch(QueryException $ex) {
-        DB::rollBack();
-
-        // Vérifier si l'erreur est une violation de clé étrangère
-        if ($ex->getCode() == "23503") {
-            // Retourne une réponse d'erreur personnalisée
-            return ApiResponseClass::sendError(
-                'Impossible de supprimer ce matériel car il est encore prêté.',
-                400
-            );
-        }
-        Log::error("Erreur lors de la suppression du matériel: " . $ex->getMessage());
-        return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
-    }
-}
-
-
-
-
-    public function assignToPoste(Request $request, int $post_id)
         {
             DB::beginTransaction();
             try {
-                // Récupérer la liste des matériels depuis le body de la requête
-                $materiels = $request->input('materiels');
-
-                if (!is_array($materiels)) {
-                    return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
-                }
-                // Tableau pour les matériels déjà assignés
-                $materielsDejaAssignes = [];
-                // Tableau pour les matériels non valides
-                $materielsNonAssignable = [];
-
-                // Filtrer les matériels pour retirer ceux qui ne remplissent pas les conditions
-                foreach ($materiels as $key => $materiel_id) {
-                    $materiel = Materiel::findOrFail($materiel_id);
-
-                    // Vérifier si le matériel est déjà associé à un poste
-                    if ($materiel->post_id !== null) {
-                        // Ajouter ce matériel au tableau des matériels déjà assignés
-                        $materielsDejaAssignes[] = $materiel_id;
-                        // Retirer ce matériel du tableau des matériels à assigner
-                        unset($materiels[$key]);
-                        continue; // Passer au matériel suivant
-                    }
-
-                    // Vérifier l'état et la localisation
-                    if ($materiel->etat !== 'Présent fonctionnel' || $materiel->localisation !== 'en magasin') {
-                        // Ajouter ce matériel au tableau des matériels prêter ou en reparation
-                        $materielsNonAssignable[] = $materiel_id;
-                        // Retirer ce matériel du tableau des matériels à assigner
-                        unset($materiels[$key]);
-                        continue; // Passer au matériel suivant
-                    }
-                }
-
-                // Assigner les matériels restants au poste
-                foreach ($materiels as $materiel_id) {
-                    $materiel = Materiel::findOrFail($materiel_id);
-                    $poste = Post::findOrFail($post_id);
-
-                    // Assigner le matériel au poste
-                    $materiel->post()->associate($poste);
-
-                    // Mettre à jour l'état du matériel en "utilisation"
-                    $materiel->localisation = 'en utilisation';
-
-                    // Modifier l'ID de la salle du matériel pour qu'il corresponde à celui du poste
-                    $materiel->salle_id = $poste->salle_id;
-                    $materiel->save();
-                }
+                $this->materielRepositoryInterface->delete($materiel->id);
                 DB::commit();
-
-                // Réponse en cas de succès avec des messages appropriés
-                $messages = [];
-                if (!empty($materielsDejaAssignes)) {
-                    $messages[] = 'Certains matériels étaient déjà associés à un poste.';
-                }
-                if (!empty($materielsNonAssignable)) {
-                    $messages[] = 'Certains matériels n\'étaient pas valides (état ou localisation incorrects).';
-                }
-
-                return ApiResponseClass::sendResponse('Matériels traités avec succès.', [
-                    'materiels_deja_assignes' => $materielsDejaAssignes,
-                    'materiels_non_assignable' => $materielsNonAssignable,
-                ], 200);
+                return ApiResponseClass::sendResponse('Matériel Delete Successful','',200);
             }
-            catch (\Exception $ex) {
+            catch(QueryException $ex) {
                 DB::rollBack();
-                Log::error("Erreur lors de l'assignation des matériels: " . $ex->getMessage());
-                return ApiResponseClass::rollback($ex->getMessage());
+
+                // Vérifier si l'erreur est une violation de clé étrangère
+                if ($ex->getCode() == "23503") {
+                    // Retourne une réponse d'erreur personnalisée
+                    return ApiResponseClass::sendError(
+                        'Impossible de supprimer ce matériel car il est encore utiliser ou  prêté.',
+                        400
+                    );
+                }
+                Log::error("Erreur lors de la suppression du matériel: " . $ex->getMessage());
+                return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
             }
         }
 
 
 
 
+    // public function assignToPoste(Request $request, int $post_id)
+    //     {
+    //         DB::beginTransaction();
+    //         try {
+    //             // Récupérer la liste des matériels depuis le body de la requête
+    //             $materiels = $request->input('materiels');
 
-        public function detachMaterielsFromPost(Request $request)
+    //             if (!is_array($materiels)) {
+    //                 return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+    //             }
+    //             // Tableau pour les matériels déjà assignés
+    //             $materielsDejaAssignes = [];
+    //             // Tableau pour les matériels non valides
+    //             $materielsNonAssignable = [];
+
+    //             // Filtrer les matériels pour retirer ceux qui ne remplissent pas les conditions
+    //             foreach ($materiels as $key => $materiel_id) {
+    //                 $materiel = Materiel::findOrFail($materiel_id);
+
+    //                 // Vérifier si le matériel est déjà associé à un poste
+    //                 if ($materiel->post_id !== null) {
+    //                     // Ajouter ce matériel au tableau des matériels déjà assignés
+    //                     $materielsDejaAssignes[] = $materiel_id;
+    //                     // Retirer ce matériel du tableau des matériels à assigner
+    //                     unset($materiels[$key]);
+    //                     continue; // Passer au matériel suivant
+    //                 }
+
+    //                 // Vérifier l'état et la localisation
+    //                 if ($materiel->etat !== 'Présent fonctionnel' || $materiel->localisation !== 'en magasin') {
+    //                     // Ajouter ce matériel au tableau des matériels prêter ou en reparation
+    //                     $materielsNonAssignable[] = $materiel_id;
+    //                     // Retirer ce matériel du tableau des matériels à assigner
+    //                     unset($materiels[$key]);
+    //                     continue; // Passer au matériel suivant
+    //                 }
+    //             }
+
+    //             // Assigner les matériels restants au poste
+    //             foreach ($materiels as $materiel_id) {
+    //                 $materiel = Materiel::findOrFail($materiel_id);
+    //                 $poste = Post::findOrFail($post_id);
+
+    //                 // Assigner le matériel au poste
+    //                 $materiel->post()->associate($poste);
+
+    //                 // Mettre à jour l'état du matériel en "utilisation"
+    //                 $materiel->localisation = 'en utilisation';
+
+    //                 // Modifier l'ID de la salle du matériel pour qu'il corresponde à celui du poste
+    //                 $materiel->salle_id = $poste->salle_id;
+    //                 $materiel->save();
+    //             }
+    //             DB::commit();
+
+    //             // Réponse en cas de succès avec des messages appropriés
+    //             $messages = [];
+    //             if (!empty($materielsDejaAssignes)) {
+    //                 $messages[] = 'Certains matériels étaient déjà associés à un poste.';
+    //             }
+    //             if (!empty($materielsNonAssignable)) {
+    //                 $messages[] = 'Certains matériels n\'étaient pas valides (état ou localisation incorrects).';
+    //             }
+
+    //             return ApiResponseClass::sendResponse('Matériels traités avec succès.', [
+    //                 'materiels_deja_assignes' => $materielsDejaAssignes,
+    //                 'materiels_non_assignable' => $materielsNonAssignable,
+    //             ], 200);
+    //         }
+    //         catch (\Exception $ex) {
+    //             DB::rollBack();
+    //             Log::error("Erreur lors de l'assignation des matériels: " . $ex->getMessage());
+    //             return ApiResponseClass::rollback($ex->getMessage());
+    //         }
+    //     }
+    public function assignToPoste(Request $request, int $materiel_id)
+    {
+        DB::beginTransaction();
+        try {
+            // Récupérer l'ID du poste depuis le corps de la requête
+            $post_id = $request->input('post_id');
+
+            // Valider l'entrée du poste
+            if (!$post_id) {
+                return ApiResponseClass::sendError("ID de poste manquant dans la requête.", 400);
+            }
+
+            // Appeler la méthode du repository pour assigner le matériel au poste
+            $this->materielRepositoryInterface->assigneToPost($materiel_id, $post_id);
+
+            DB::commit();
+
+            // Retourner une réponse de succès
+            return ApiResponseClass::sendResponse("Matériel assigné avec succès au poste.", [], 200);
+        }
+        catch (\Exception $ex) {
+            DB::rollBack();
+            Log::error("Erreur lors de l'assignation du matériel: " . $ex->getMessage());
+            return ApiResponseClass::rollback($ex->getMessage());
+        }
+    }
+
+
+
+
+
+        // public function detachMaterielsFromPost(Request $request)
+        // {
+        //     DB::beginTransaction();
+        //     try {
+        //         // Récupérer les IDs des matériels depuis le body de la requête
+        //         $materielIds = $request->input('materiels');
+        //         if (!is_array($materielIds)) {
+        //             return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+        //         }
+
+        //         // Récupérer l'état et la localisation depuis la requête
+        //         $etat = $request->input('etat');
+        //         $localisation = $request->input('localisation');
+
+        //         // Tenter de récupérer la salle "magasin"
+        //         try {
+        //             $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
+        //         }
+        //         catch (ModelNotFoundException $e) {
+        //             return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
+        //         }
+
+        //         // Récupérer l'ID de la salle magasin
+        //         $salleMagasinId = $salleMagasin->id;
+
+        //         // Appel au repository pour détacher les matériels
+        //         $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId, $etat, $localisation);
+
+        //         DB::commit();
+
+        //         // Retourner une réponse de succès
+        //         return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
+        //     }
+        //     catch (\Exception $ex) {
+        //         DB::rollBack();
+        //         Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
+        //         return ApiResponseClass::rollback($ex->getMessage());
+        //     }
+        // }
+
+        public function detachMaterielFromPost(Request $request, int $materiel_id)
         {
             DB::beginTransaction();
             try {
-                // Récupérer les IDs des matériels depuis le body de la requête
-                $materielIds = $request->input('materiels');
-                if (!is_array($materielIds)) {
-                    return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
+                // Récupérer l'ID du poste depuis le corps de la requête
+                $post_id = $request->input('post_id');
+                if (!$post_id) {
+                    return ApiResponseClass::sendError("L'ID du poste est manquant dans la requête.", 400);
                 }
 
                 // Récupérer l'état et la localisation depuis la requête
                 $etat = $request->input('etat');
                 $localisation = $request->input('localisation');
 
-                // Tenter de récupérer la salle "magasin"
-                try {
-                    $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
-                }
-                catch (ModelNotFoundException $e) {
-                    return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
-                }
+                // // Tenter de récupérer la salle "magasin"
+                // try {
+                //     $salleMagasin = Salle::where('nomination', 'magasin')->firstOrFail();
+                // }
+                // catch (ModelNotFoundException $e) {
+                //     return ApiResponseClass::sendError("La salle 'magasin' n'existe pas.", 404);
+                // }
 
                 // Récupérer l'ID de la salle magasin
-                $salleMagasinId = $salleMagasin->id;
+               // $salleMagasinId = $salleMagasin->id;
 
-                // Appel au repository pour détacher les matériels
-                $this->materielRepositoryInterface->detachMaterielsFromPost($materielIds, $salleMagasinId, $etat, $localisation);
+                // Appel au repository pour détacher le matériel du poste
+                $this->materielRepositoryInterface->detachMaterielsFromPost($materiel_id, $post_id, $etat, $localisation);
 
                 DB::commit();
 
                 // Retourner une réponse de succès
-                return ApiResponseClass::sendResponse('Matériels détachés du poste avec succès.', '', 200);
+                return ApiResponseClass::sendResponse('Matériel détaché du poste avec succès.', '', 200);
             }
             catch (\Exception $ex) {
                 DB::rollBack();
-                Log::error("Erreur lors du détachement des matériels: " . $ex->getMessage());
+                Log::error("Erreur lors du détachement du matériel: " . $ex->getMessage());
                 return ApiResponseClass::rollback($ex->getMessage());
             }
         }
+
+
+
+        // app/Http/Controllers/MaterielController.php
+
+        public function getPostByMateriel($materiel_id)
+        {
+            $materiel = Materiel::find($materiel_id);
+
+            if (!$materiel) {
+                return response()->json(['message' => 'Matériel non trouvé'], 404);
+            }
+
+            //renvoie l'objet Post associé
+            $post = $materiel->post;
+
+            // Vérifiez si le post existe
+            if (!$post) {
+                return response()->json(['message' => 'Post non trouvé'], 404);
+            }
+
+            return response()->json($post);
+        }
+
+
 
 
 

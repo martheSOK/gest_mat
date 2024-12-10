@@ -37,4 +37,21 @@ class Post extends Model
     {
         return $this->belongsToMany(User::class ,'user_posts');
     }
+
+    public static function postsWithoutMateriel($materielId)
+    {
+        return self::where(function ($query) use ($materielId) {
+            // Post sans matériels associés
+            $query->whereDoesntHave('materiels')
+                  ->orWhereDoesntHave('materiels', function ($subQuery) use ($materielId) {
+                    // Pas de matériel spécifique
+                    $subQuery->where('id', $materielId);
+                  });
+        })->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+        ]);
+    }
 }

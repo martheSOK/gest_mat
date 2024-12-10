@@ -27,7 +27,7 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'contact' => 'required|string|regex:/^[0-9]+$/|max:15',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email' => 'required|email|max:255',
             'password' => 'required|string|min:8|confirmed',
             //'post_id' => 'nullable|exists:posts,id',
         ];
@@ -55,7 +55,7 @@ class UpdateUserRequest extends FormRequest
             'email.required' => 'L\'email est obligatoire.',
             'email.email' => 'L\'email doit être une adresse email valide.',
             'email.max' => 'L\'email ne peut pas dépasser 255 caractères.',
-            'email.unique' => 'Cet email est déjà utilisé par un autre utilisateur.',
+            //'email.unique' => 'Cet email est déjà utilisé par un autre utilisateur.',
 
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.string' => 'Le mot de passe doit être une chaîne de caractères.',

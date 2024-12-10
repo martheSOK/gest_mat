@@ -154,52 +154,49 @@ class PostController extends Controller
         }
 
 
+        public function assigneUsers(Request $request, int $post)
+        {
+            $userActifs = [];
+            $data = $request->input("data");
+            //dd($data);
 
-    public function assigneUsers(Request $request, int $post)
-    {
-        $userActifs = [];
-        $data = $request->input("data");
-        if (!is_array($data)) {
-            return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
-        }
-        //dd($data);
-        foreach ($data as $key => $userId) {
-            $posteActif = $this->postRepositoryInterface->verifierPosteActif($userId);
-
-            if ($posteActif) {
-                // Ajouter l'utilisateur au tableau $userActifs
-                array_push($userActifs, $userId);
-
-                // Retirer l'utilisateur du tableau $data
-                unset($data[$key]);
+            if (!is_array($data)) {
+                return ApiResponseClass::sendError("Les données soumises sont incorrectes", 400);
             }
-        }
 
-        // Optionnel : Réindexer le tableau $data
-        $data = array_values($data);
-
-
-        $message = "";
-        DB::beginTransaction();
-        try {
-            // Appeler la méthode dans le repository pour assigner les utilisateurs et mettre à jour l'état du poste
-            $this->postRepositoryInterface->assigneUsers($data, $post);
-            DB::commit();
-            if ($userActifs) {
-                $message = count($userActifs)." user(s)  a ou ont un post actif" ;
-            } else {
-                $message ="Post assigné avec succès";
+            foreach ($data as $key => $userId) {
+                //dd($userId);
+                $posteActif = $this->postRepositoryInterface->verifierPosteActif($userId);
+                //dd($posteActif);
+                if ($posteActif) {
+                    array_push($userActifs, $userId);
+                    unset($data[$key]);
+                }
             }
-            return ApiResponseClass::sendResponse($userActifs, $message, 206);
 
+            $data = array_values($data);
+            $message = "";
 
-        } catch (\Exception $ex) {
-            DB::rollBack();  // Annuler la transaction en cas d'erreur
-            Log::error("Erreur lors de l'assignation du post: " . $ex->getMessage());
-            return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
+            DB::beginTransaction();
+            try {
+                $this->postRepositoryInterface->assigneUsers($data, $post);
+                DB::commit();
+
+                if ($userActifs) {
+                    $message = count($userActifs) . " user(s) a ou ont déjà un post actif";
+                }
+                else {
+                    $message = "Post assigné avec succès";
+                }
+                return ApiResponseClass::sendResponse($userActifs, $message, 206);
+            }
+            catch (\Exception $ex) {
+                DB::rollBack();
+                Log::error("Erreur lors de l'assignation du post: " . $ex->getMessage());
+                return ApiResponseClass::sendError($ex->getMessage(), 400);  // Renvoie le message d'erreur
+            }
+            //dd($userActifs);
         }
-
-    }
 
 
 
@@ -222,14 +219,17 @@ class PostController extends Controller
                 // Compter le nombre d'utilisateurs restants liés à ce poste
                 $remainingUsersCount = DB::table('user_posts')
                     ->where('post_id', $post)
-                    ->where('utilise', true) // Compte uniquement les utilisateurs actifs
+                    ->where('utilise', true)
                     ->count();
 
                 // Déterminer l'état du poste
                 if ($remainingUsersCount === 0) {
-                    $status = 'Disponible'; // Aucun utilisateur actif
-                } else {
-                    $status = 'Partielement disponible'; // Au moins un utilisateur actif
+                    // Aucun utilisateur actif
+                    $status = 'Disponible';
+                }
+                else {
+                    // Au moins un utilisateur actif
+                    $status = 'Partielement disponible';
                 }
 
                 // Mettre à jour l'état du poste
@@ -240,11 +240,48 @@ class PostController extends Controller
                 DB::commit();
 
                 return ApiResponseClass::sendResponse('Utilisateurs détachés avec succès', '', 200);
-            } catch (\Exception $ex) {
+            }
+            catch (\Exception $ex) {
                 DB::rollBack();
                 Log::error("Erreur lors du détachement des utilisateurs : " . $ex->getMessage());
                 return ApiResponseClass::rollback($ex->getMessage());
             }
         }
+
+
+        public function getUsersByPost($post)
+            {
+                // Trouver le post par ID avec les utilisateurs associés
+                $post = Post::with('users')->find($post);
+
+                // Vérifier si le post existe
+                if (!$post) {
+                    return response()->json(['message' => 'Post non trouvé'], 404);
+                }
+                DB::beginTransaction();
+
+                try {
+                    // Récupérer les utilisateurs associés au post
+                    $users = $post->users;
+
+                    // Retourner la liste des utilisateurs
+                    return response()->json($users);
+                }
+                catch (\Exception $ex) {
+                    DB::rollBack();
+                    Log::error("Erreur lors de la recuperation des utilisateurs : " . $ex->getMessage());
+                    return ApiResponseClass::rollback($ex->getMessage());
+                }
+            }
+
+
+
+
+            public function getPostsWithoutMateriel($materiel_id)
+                {
+                    $posts = Post::postsWithoutMateriel($materiel_id);
+                    return response()->json($posts);
+                }
+
 
 }

@@ -32,7 +32,8 @@ class PretController extends Controller
         // $prets=Pret::all();
 
         // return $prets ;
-        $liste_prets = $this->pretRepositoryInterface->index();
+        $liste_prets = $this->pretRepositoryInterface->index()->load('ligne_prets.materiel');
+        //dd($liste_prets);
         return ApiResponseClass::sendResponse( PretResource::collection($liste_prets),'',200);
 
     }
@@ -75,7 +76,8 @@ class PretController extends Controller
                             $materiel->etat = 'Absent';
                             $materiel->localisation = 'en location';
                             $materiel->salle_id = null;
-                        } elseif ($request->type_pret == 'réparation') {
+                        }
+                        elseif ($request->type_pret == 'réparation') {
                             $materiel->etat = 'Absent';
                             $materiel->localisation = 'en reparation';
                             $materiel->salle_id = null;

@@ -23,9 +23,17 @@ class UserRepository implements UserRepositoryInterface
        return User::create($data);
     }
 
-    public function update(array $data,$id){
-        return User::whereId($id)->first();
+    public function update(array $data, $id) {
+        $user = User::find($id);
+
+        if ($user) {
+            // Mettre à jour les attributs de l'utilisateur avec les nouvelles données
+            $user->update($data);
+        }
+        // Retourner l'utilisateur mis à jour
+        return $user;
     }
+
 
     public function delete($id)
     {

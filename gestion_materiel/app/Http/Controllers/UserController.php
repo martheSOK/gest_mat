@@ -34,7 +34,7 @@ class UserController extends Controller{
             'contact' => $request->contact,
             'email' =>$request->email,
             'password'=> $request->password,
-            //'post_id' => $request->post_id
+
 
         ];
         DB::beginTransaction();
@@ -67,32 +67,30 @@ class UserController extends Controller{
 
         return ApiResponseClass::sendResponse(null, 'user non trouvé ou supprimé.', 404);
     }
-
-    public function update(UpdateUserRequest $request , User $user){
+    public function update(UpdateUserRequest $request, User $user) {
         $updateDetails = [
-            'name' =>$request->name,
+            'name' => $request->name,
             'prenom' => $request->prenom,
             'contact' => $request->contact,
-            'email' =>$request->email,
-            'password'=> $request->password,
-            //'post_id' => $request->post_id
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
         ];
 
         DB::beginTransaction();
-         try{
-             $user = $this->userRepositoryInterface->update($updateDetails,$user->id);
+        try {
+            // Mise à jour de l'utilisateur via le repository
+            $user = $this->userRepositoryInterface->update($updateDetails, $user->id);
 
-             DB::commit();
-             //dd($user);
-             return ApiResponseClass::sendResponse(new UserResource($user),'user registered Successfuly',201);
+            DB::commit();
+            return ApiResponseClass::sendResponse(new UserResource($user), 'Utilisateur mis à jour avec succès', 200);
 
-        }catch (\Exception $ex) {
+        } catch (\Exception $ex) {
             DB::rollBack();
-
-            Log::error("Erreur lors de la creation de user: " . $ex->getMessage());
+            Log::error("Erreur lors de la mise à jour de l'utilisateur : " . $ex->getMessage());
             return ApiResponseClass::rollback($ex->getMessage());
         }
     }
+
 
     public function destroy(User $user){
         DB::beginTransaction();
@@ -117,7 +115,7 @@ class UserController extends Controller{
         Log::error("Erreur lors de la suppression du user: " . $ex->getMessage());
 
         // Retourne la réponse d'erreur générique
-        return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
+        return ApiResponseClass::rollback($ex->getMessage());  
     }
 }
 

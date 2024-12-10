@@ -24,7 +24,7 @@ export default function DetailsMateriel() {
                 setError("Erreur lors de la récupération des détails du matériel");
             }
         } catch (error) {
-            setError("Erreur réseau ou serveur");
+            setError(error);
         } finally {
             setLoading(false); // Terminer le chargement
         }

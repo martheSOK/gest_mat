@@ -19,6 +19,8 @@ class LignePretResource extends JsonResource
             'pret_id' => $this->pret_id ,
             'materiel_id' => $this->materiel_id,
             'quantite_preter' => $this->quantite_preter ,
+            'materiel' => new MaterielResource($this->materiel),
+            'created_at' => $this->created_at
 
         ];
     }

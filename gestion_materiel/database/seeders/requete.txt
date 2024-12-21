@@ -107,3 +107,119 @@ Laravel Sanctum API series/laravel-api-app
 
 //historique
 
+import React, { useState } from 'react';
+
+const ModalModifierLigne = ({ isOpen, onClose, onUpdate, ligneActuelle }) => {
+  const [libelle, setLibelle] = useState(ligneActuelle ? ligneActuelle.libelle : '');
+  const [quantitePreter, setQuantitePreter] = useState(ligneActuelle ? ligneActuelle.quantite_preter : '');
+
+  const handleSubmit = () => {
+    if (libelle && quantitePreter >= 0) {
+      onUpdate({ libelle, quantite_preter: quantitePreter });
+      onClose(); // Fermer la modale après la mise à jour
+    } else {
+      alert('Veuillez remplir tous les champs correctement');
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Modifier la ligne</h2>
+        <label>Libellé</label>
+        <input
+          type="text"
+          value={libelle}
+          onChange={(e) => setLibelle(e.target.value)}
+        />
+        <label>Quantité prêtée</label>
+        <input
+          type="number"
+          value={quantitePreter}
+          onChange={(e) => setQuantitePreter(e.target.value)}
+        />
+        <div className="modal-buttons">
+          <button onClick={handleSubmit}>Enregistrer</button>
+          <button onClick={onClose}>Annuler</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ModalModifierLigne;
+
+
+import React, { useState } from 'react';
+import ModalModifierLigne from './ModalModifierLigne'; // Importer la modale
+import Swal from 'sweetalert2';
+
+const LignesTable = () => {
+  const [lignes, setLignes] = useState(JSON.parse(localStorage.getItem('lignesAjoutees')) || []);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [ligneActuelle, setLigneActuelle] = useState(null);
+
+  const updateLigneAjouter = (index, updatedData) => {
+    const lignesAjoutees = [...lignes];
+    lignesAjoutees[index] = { ...lignesAjoutees[index], ...updatedData };
+    setLignes(lignesAjoutees);
+    localStorage.setItem('lignesAjoutees', JSON.stringify(lignesAjoutees));
+
+    // Affichage de la confirmation
+    Swal.fire({
+      icon: 'success',
+      title: 'Ligne mise à jour avec succès!',
+      text: `Matériel : ${updatedData.libelle} - Quantité : ${updatedData.quantite_preter}`,
+    });
+  };
+
+  const handleModifierLigne = (index) => {
+    const ligne = lignes[index];
+    setLigneActuelle(ligne);
+    setIsModalOpen(true); // Ouvrir la modale pour modification
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Libellé</th>
+            <th>Quantité prêtée</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lignes.map((lign, index) => (
+            <tr key={index}>
+              <td>{lign.libelle}</td>
+              <td>{lign.quantite_preter}</td>
+              <td>
+                <button onClick={() => handleModifierLigne(index)} className="bg-green-600 text-white rounded-lg px-4 py-2">
+                  Modifier
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* La modale pour la modification */}
+      <ModalModifierLigne
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onUpdate={(updatedData) => updateLigneAjouter(lignes.indexOf(ligneActuelle), updatedData)}
+        ligneActuelle={ligneActuelle}
+      />
+    </div>
+  );
+};
+
+export default LignesTable;
+

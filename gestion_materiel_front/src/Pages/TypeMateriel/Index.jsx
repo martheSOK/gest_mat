@@ -61,27 +61,43 @@ export default function Index() {
     
     return (
         <>
+        {/* Boutons de Retour et Ajouter */}
+        <div className="flex justify-between items-center mb-4 m-10">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="bg-gray-600 text-white text-sm rounded-lg px-6 py-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Retour
+                </button>
+
+                <Link
+                    to="/create/type_materiel" 
+                    className="bg-blue-700 text-white rounded-lg px-6 py-2 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Enregistrer un TypeMateriel
+                </Link>
+            </div>
           <h1 className="title">Liste des types de matériels</h1>
           {type_materiels.length > 0 ? (
-            <table className="table-auto w-full border-collapse border border-slate-400">
-              <thead>
-                <tr>
-                  <th className="border border-slate-300 p-2">ID</th>
-                  <th className="border border-slate-300 p-2">Libellé</th>
-                  <th className="border border-slate-300 p-2">Date de création</th>
-                  <th className="border border-slate-300 p-2">Actions</th>
+            <table className="table-auto w-full border-collapse border border-slate-400 shadow-md">
+            <thead>
+                <tr className="bg-gray-500 text-white">
+                  <th className="border border-slate-300 p-2 text-center">ID</th>
+                  <th className="border border-slate-300 p-2 text-center">Libellé</th>
+                  <th className="border border-slate-300 p-2 text-center">Date de création</th>
+                  <th className="border border-slate-300 p-2 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {type_materiels.map((type_materiel) => (
                   <tr key={type_materiel.id} className="border border-slate-300">
-                    <td className="border border-slate-300 p-2">{type_materiel.id}</td>
-                    <td className="border border-slate-300 p-2">{type_materiel.libelle}</td>
-                    <td className="border border-slate-300 p-2">
+                    <td className="border border-slate-300 p-2 text-center">{type_materiel.id}</td>
+                    <td className="border border-slate-300 p-2 text-center">{type_materiel.libelle}</td>
+                    <td className="border border-slate-300 p-2 text-center">
                       {new Date(type_materiel.created_at).toLocaleDateString('fr-FR')}{" "}
                       {new Date(type_materiel.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} 
                     </td>
-                    <td className="border border-slate-300 px-2 py-2">
+                    <td className="border border-slate-300 p-2 text-center">
                       <Link
                         to={`/type_materiel/show/${type_materiel.id}`}
                         className="bg-blue-600 text-white text-sm rounded-lg px-2 py-1"

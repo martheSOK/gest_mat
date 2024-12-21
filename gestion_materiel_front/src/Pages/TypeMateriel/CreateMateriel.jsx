@@ -43,23 +43,38 @@ export default function CreateMateriel() {
   }
 
   return (
-    <>
-      <h1 className="title">Créer un nouveau type de matériel</h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Créer un nouveau type de matériel
+        </h1>
 
-      <form onSubmit={handleCreate} className="w-1/2 mx-auto space-y-6">
-        <div>
-          <input
-            type="text"
-            placeholder="Libellé"
-            value={formData.libelle}
-            onChange={(e) =>
-              setFormData({ ...formData, libelle: e.target.value })
-            }
-          />
-          {errors.libelle && <p className="error">{errors.libelle[0]}</p>}
-        </div>
-        <button className="primary-btn">Créer</button>
-      </form>
-    </>
+        <form onSubmit={handleCreate} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Libellé
+            </label>
+            <input
+              type="text"
+              placeholder="Libellé"
+              value={formData.libelle}
+              onChange={(e) =>
+                setFormData({ ...formData, libelle: e.target.value })
+              }
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {errors.libelle && (
+              <p className="text-red-500 text-sm mt-1">{errors.libelle[0]}</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            Créer
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

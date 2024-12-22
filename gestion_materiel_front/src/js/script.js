@@ -181,16 +181,18 @@ function updateLigneAjouter(index, updatedData = null) {
         // Vérifier si l'index est valide
         if (lignesAjoutees[index]) {
             const ligneActuelle = lignesAjoutees[index]; // Informations actuelles
-
-            // Si aucune mise à jour n'est fournie, renvoyer la ligne actuelle
-            if (!updatedData) {
+            console.log(ligneActuelle);
+            
+            // Mettre à jour la ligne correspondante avec les nouvelles données
+            if (updatedData) {
+                lignesAjoutees[index] = { ...ligneActuelle, ...updatedData };
+                console.log(lignesAjoutees);
+            }
+             // Si aucune mise à jour n'est fournie, renvoyer la ligne actuelle
+            else{
                 console.log('Ligne récupérée pour modification :', ligneActuelle);
                 return ligneActuelle;
             }
-
-            // Mettre à jour la ligne correspondante avec les nouvelles données
-            lignesAjoutees[index] = { ...ligneActuelle, ...updatedData };
-
             // Sauvegarder les modifications dans localStorage
             localStorage.setItem('lignesAjoutees', JSON.stringify(lignesAjoutees));
 
@@ -203,8 +205,8 @@ function updateLigneAjouter(index, updatedData = null) {
 
             // Recharger les lignes affichées dans le tableau
             updatTbody(); 
-
-            return lignesAjoutees[index]; // Retourner la ligne mise à jour
+             // Retourner la ligne mise à jour
+            return lignesAjoutees[index];
         } else {
             throw new Error('Index invalide');
         }
@@ -216,10 +218,10 @@ function updateLigneAjouter(index, updatedData = null) {
             text: 'Impossible de récupérer ou de modifier cette ligne ajoutée.',
         });
 
-        return null; // En cas d'erreur, retourner null
+        return null; 
     }
 }
-    function handleModifierLigne(index) {
+    function ModifierLigne(index) {
         // Récupérer la ligne actuelle
         const ligneActuelle = updateLigneAjouter(index);
     
@@ -240,13 +242,14 @@ function updateLigneAjouter(index, updatedData = null) {
                     const quantite_preter = parseInt(document.getElementById('quantite_preter').value, 10);
     
                     // Valider la quantité prêtée
-                    if (isNaN(quantite_preter)) {
+                    if (!isNaN(quantite_preter)) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Erreur',
                             text: 'La quantité prêtée doit être un nombre valide.',
                         });
-                        return false; // Ne pas valider si la quantité est invalide
+                        // Ne pas valider si la quantité est invalide
+                        return false; 
                     }
     
                     return { libelle, quantite_preter };
@@ -270,4 +273,4 @@ function updateLigneAjouter(index, updatedData = null) {
 
 
 
-export {afficheForm, ajoutLine,updatTbody, genereLigne, existMaterial,supperLigneExist,supperLigneAjouter,handleModifierLigne,updateLigneExt} ;
+export {afficheForm, ajoutLine,updatTbody, genereLigne, existMaterial,supperLigneExist,supperLigneAjouter,ModifierLigne,updateLigneExt} ;

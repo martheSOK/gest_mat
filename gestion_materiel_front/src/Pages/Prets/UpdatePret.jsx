@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import {afficheForm, ajoutLine, supperLigneExist,supperLigneAjouter,handleModifierLigne,updateLigneExt} from "../../js/script";
+import {afficheForm, ajoutLine, supperLigneExist,supperLigneAjouter,ModifierLigne,updateLigneExt} from "../../js/script";
+
 export default function UpdatePret() {
    
     const { pret_id } = useParams(); 
@@ -286,7 +287,9 @@ export default function UpdatePret() {
                         {(JSON.parse(localStorage.getItem("lignes"))).map((ligne, index)=>(
                             <tr key={index}>
                                 <td>{`${ligne.materiel.type_materiel.libelle} (${ligne.materiel.numero_serie} )` }</td>
+
                                 <td>{`${ligne.quantite_preter}` }</td>
+                                
                                 <td>
                                     <button id={`${ligne.materiel_id}`} onClick={supperLigneExist} className="bg-red-600 text-white rounded-lg px-4 py-2 mr-5 ">
                                         <input id={`${ligne.materiel_id}`} type="number" value={ligne.materiel_id} hidden/>
@@ -317,7 +320,7 @@ export default function UpdatePret() {
                                         <input id={`${lign.materiel_id}`} type="number" value={lign.materiel_id} hidden/>
                                         supprimer
                                     </button>
-                                    <button id={`${lign.materiel_id}`}   onClick={() => handleModifierLigne(index)} className="bg-green-600 text-white rounded-lg px-4 py-2 ">
+                                    <button id={`${lign.materiel_id}`}   onClick={() => ModifierLigne(index)} className="bg-green-600 text-white rounded-lg px-4 py-2 ">
                                         <input type="number" value={lign.materiel_id} hidden/>
                                         modifier
                                     </button>

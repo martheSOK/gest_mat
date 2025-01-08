@@ -28,8 +28,6 @@ class PretController extends Controller
      */
     public function index()
     {
-        //
-        // $prets=Pret::all();
 
         // return $prets ;
         $liste_prets = $this->pretRepositoryInterface->index()->load('ligne_prets.materiel');
@@ -43,71 +41,69 @@ class PretController extends Controller
      */
 
      public function store(StorePretRequest $request)
-        {
-            // Récupérer les détails du prêt
-            $details = [
-                'user_id' => $request->user_id,
-                'date_pret' => $request->date_pret,
-                'date_retour' => $request->date_retour,
-                'type_pret' => $request->type_pret,
-                'etat' => $request->etat,
-            ];
+    {
+        // Récupérer les détails du prêt sans définir explicitement 'etat'
+        $details = [
+            'user_id' => $request->user_id,
+            'date_pret' => $request->date_pret,
+            'date_retour' => $request->date_retour,
+            'type_pret' => $request->type_pret,
+        ];
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            try {
-                // Créer le prêt
-                $pret = Pret::create($details);
+        try {
+            // Créer le prêt
+            $pret = Pret::create($details);
 
-                // Ajouter les lignes de prêt et mettre à jour l'état et localisation des matériels
-                foreach ($request->ligne_prets as $ligne) {
-                    $materiel = Materiel::find($ligne['materiel_id']);
+            // Ajouter les lignes de prêt et mettre à jour l'état et localisation des matériels
+            foreach ($request->ligne_prets as $ligne) {
+                $materiel = Materiel::find($ligne['materiel_id']);
 
-                    // Vérifier que le matériel existe
-                    if (!$materiel) {
-                        throw new \Exception("Le matériel avec ID {$ligne['materiel_id']} n'existe pas.");
-                    }
-
-                    // Vérifier que le matériel est prêt à être prêté
-                    if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
-
-                        // Mise à jour des champs selon le type de prêt
-                        if ($request->type_pret == 'emprunt') {
-                            $materiel->etat = 'Absent';
-                            $materiel->localisation = 'en location';
-                            $materiel->salle_id = null;
-                        }
-                        elseif ($request->type_pret == 'réparation') {
-                            $materiel->etat = 'Absent';
-                            $materiel->localisation = 'en reparation';
-                            $materiel->salle_id = null;
-                        }
-
-                        // Sauvegarder les modifications sur le matériel
-                        $materiel->save();
-
-                        // Créer la ligne de prêt
-                        LignePret::create([
-                            'pret_id' => $pret->id,
-                            'materiel_id' => $ligne['materiel_id'],
-                            'quantite_preter' => $ligne['quantite_preter'],
-                        ]);
-                    } else {
-                        // Log des détails sur l'état et la localisation pour le débogage
-                        Log::warning("Le matériel {$materiel->id} ne peut pas être prêté. État: {$materiel->etat}, Localisation: {$materiel->localisation}");
-                        throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
-                    }
+                // Vérifier que le matériel existe
+                if (!$materiel) {
+                    throw new \Exception("Le matériel avec ID {$ligne['materiel_id']} n'existe pas.");
                 }
 
-                DB::commit();
-                return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt créé avec succès', 200);
+                // Vérifier que le matériel est prêt à être prêté
+                if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
+
+                    // Mise à jour des champs selon le type de prêt
+                    if ($request->type_pret == 'emprunt') {
+                        $materiel->etat = 'Absent';
+                        $materiel->localisation = 'en location';
+                        $materiel->salle_id = null;
+                    } elseif ($request->type_pret == 'réparation') {
+                        $materiel->etat = 'Absent';
+                        $materiel->localisation = 'en reparation';
+                        $materiel->salle_id = null;
+                    }
+
+                    // Sauvegarder les modifications sur le matériel
+                    $materiel->save();
+
+                    // Créer la ligne de prêt
+                    LignePret::create([
+                        'pret_id' => $pret->id,
+                        'materiel_id' => $ligne['materiel_id'],
+                        'quantite_preter' => $ligne['quantite_preter'],
+                    ]);
+                } else {
+                    // Log des détails sur l'état et la localisation pour le débogage
+                    Log::warning("Le matériel {$materiel->id} ne peut pas être prêté. État: {$materiel->etat}, Localisation: {$materiel->localisation}");
+                    throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
+                }
             }
-            catch (\Exception $ex) {
-                DB::rollBack();
-                Log::error("Erreur lors de la création du prêt: " . $ex->getMessage());
-                return ApiResponseClass::rollback($ex->getMessage());
-            }
+
+            DB::commit();
+            return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt créé avec succès', 200);
         }
+        catch (\Exception $ex) {
+            DB::rollBack();
+            Log::error("Erreur lors de la création du prêt: " . $ex->getMessage());
+            return ApiResponseClass::rollback($ex->getMessage());
+        }
+    }
 
 
     /**
@@ -132,7 +128,6 @@ class PretController extends Controller
             'date_pret' => $request->date_pret,
             'date_retour' => $request->date_retour,
             'type_pret' => $request->type_pret,
-            'etat' => $request->etat,
         ];
 
         DB::beginTransaction();
@@ -141,64 +136,61 @@ class PretController extends Controller
             // Mettre à jour les informations du prêt
             $pret->update($updatedetails);
 
-            // Parcourir les lignes de prêt
-            // on extraire les valeurs du champ id(pluck()) de chaque ligne de prêt associée à ce prêt et on converti la collection retourner en tableau (toArray())
-            $existingLignePretIds = $pret->ligne_prets->pluck('id')->toArray();
+            // Parcourir les lignes de prêt existantes
+            $existingLignePretIds = $pret->ligne_prets->pluck('materiel_id')->toArray();
             $newLignePretIds = [];
+
             foreach ($request->ligne_prets as $ligne) {
-                if (isset($ligne['id'])) {
-                    // Mettre à jour une ligne de prêt existante
-                    $lignePret = LignePret::find($ligne['id']);
+                // Vérifier si le matériel est déjà associé à une ligne de prêt
+                if (in_array($ligne['materiel_id'], $existingLignePretIds)) {
+                    // Mettre à jour la ligne existante en fonction du materiel_id
+                    $lignePret = LignePret::where('pret_id', $pret->id)
+                                          ->where('materiel_id', $ligne['materiel_id'])
+                                          ->first();
                     if ($lignePret) {
                         $lignePret->update([
-                            'materiel_id' => $ligne['materiel_id'],
                             'quantite_preter' => $ligne['quantite_preter'],
+                            'materiel_id' => $ligne['materiel_id'],
                         ]);
-                        $newLignePretIds[] = $lignePret->id;
-
                     }
-                }
-                else {
-
+                } else {
                     // Ajouter une nouvelle ligne de prêt
-                    //avant d'ajouter la nouvele ligne je verifie si le materiel de cette ligne est prêtable
                     $materiel = Materiel::find($ligne['materiel_id']);
-                    if ($materiel->etat == 'Présent fonctionnel' && $materiel->localisation == 'en magasin') {
-                        // Ensuite, créer la ligne de prêt
+
+                    // Vérifier que le matériel est prêtable
+                    if ($materiel && $materiel->etat === 'en stock') {
                         LignePret::create([
                             'pret_id' => $pret->id,
                             'materiel_id' => $ligne['materiel_id'],
                             'quantite_preter' => $ligne['quantite_preter'],
                         ]);
 
+                        // Mettre à jour l'état et la localisation du matériel
                         if ($request->type_pret == 'emprunt') {
-                                $materiel->etat = 'Absent';
-                                $materiel->localisation = 'en location';
-                                $materiel->salle_id = null;
-                            } elseif ($request->type_pret == 'réparation') {
-                                $materiel->etat = 'Absent';
-                                $materiel->localisation = 'en reparation';
-                                $materiel->salle_id = null;
-                            }
-                            $materiel->save();
-
-                    }
-                    else {
+                            $materiel->etat = 'Absent';
+                            $materiel->localisation = 'en location';
+                            $materiel->salle_id = null;
+                        } elseif ($request->type_pret == 'réparation') {
+                            $materiel->etat = 'Absent';
+                            $materiel->localisation = 'en reparation';
+                            $materiel->salle_id = null;
+                        }
+                        $materiel->save();
+                    } else {
                         throw new \Exception("Le matériel {$materiel->id} n'est pas prêtable.");
                     }
-
                 }
+                // Ajouter l'ID du matériel à la liste des nouvelles lignes
+                $newLignePretIds[] = $ligne['materiel_id'];
             }
 
             // Supprimer les lignes de prêt qui ne sont plus présentes
-            //La fonction array_diff() compare deux tableaux et retourne les éléments qui sont dans le premier tableau mais pas dans le second.
             $lignesToDelete = array_diff($existingLignePretIds, $newLignePretIds);
-            LignePret::destroy($lignesToDelete);
+            LignePret::whereIn('materiel_id', $lignesToDelete)->delete();
 
             DB::commit();
 
             return ApiResponseClass::sendResponse(new PretResource($pret), 'Prêt mis à jour avec succès', 200);
-
         } catch (\Exception $ex) {
             DB::rollBack();
 
@@ -211,24 +203,42 @@ class PretController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Pret $pret)
-        {
-            DB::beginTransaction();
-            try {
-                // Vérifier l'état du prêt
-                if ($pret->etat === 'en cours') {
-                    return ApiResponseClass::sendError("Impossible de supprimer le prêt car son état est 'en cours'.", 400);
+    {
+        DB::beginTransaction();
+        try {
+
+            // // Vérifier l'état du prêt
+            // if ($pret->etat === 'en cours') {
+            //     return ApiResponseClass::sendError("Impossible de supprimer le prêt car son état est 'en cours'.", 400);
+            // }
+
+            // Récupérer toutes les lignes de prêt liées
+            $lignesPret = $pret->ligne_prets;
+            foreach ($lignesPret as $lignePret) {
+                // Récupérer le matériel associé
+                $materiel = $lignePret->materiel;
+                if ($materiel) {
+                    $materiel->update([
+                        'etat' => 'Présent fonctionnel',
+                        'localisation' => 'en magasin',
+                    ]);
                 }
-
-                // Suppression du prêt
-                $this->pretRepositoryInterface->delete($pret->id);
-
-                DB::commit(); // Valider la transaction
-                return ApiResponseClass::sendResponse('Prêt supprimé avec succès.', '', 200);
-            } catch (QueryException $ex) {
-                DB::rollBack(); // Annuler la transaction en cas d'erreur
-                Log::error("Erreur lors de la suppression du prêt: " . $ex->getMessage());
-                return ApiResponseClass::rollback($ex->getMessage()); // Utiliser le message de l'exception
             }
+
+            // Suppression des lignes de prêt associées
+            $pret->ligne_prets()->delete();
+
+            // Suppression du prêt
+            $this->pretRepositoryInterface->delete($pret->id);
+
+            DB::commit();
+            return ApiResponseClass::sendResponse('Prêt supprimé avec succès.', '', 200);
+        } catch (QueryException $ex) {
+            DB::rollBack();
+            Log::error("Erreur lors de la suppression du prêt: " . $ex->getMessage());
+            return ApiResponseClass::rollback($ex->getMessage());
         }
+    }
+
 
 }

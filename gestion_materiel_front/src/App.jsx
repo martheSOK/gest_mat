@@ -41,6 +41,7 @@ import IndexPret from './Pages/Prets/IndexPret';
 import CreatePret from './Pages/Prets/CreatePret';
 import DetailPret from './Pages/Prets/DetailPret';
 import UpdatePret from './Pages/Prets/UpdatePret';
+import Inventaire from './Pages/Inventaire';
 export default function App() {
   const { user } = useContext(AppContext);
 
@@ -95,6 +96,9 @@ export default function App() {
         <Route path="/pret/create" element={user ? <CreatePret /> : <Login />} />
         <Route path="/pret/show/:pret_id" element={user ? <DetailPret /> : <Login />} /> 
         <Route path="/pret/update/:pret_id" element={user ? <UpdatePret/> : <Login />} /> 
+
+        <Route path="/Inventaire" element={user ? <Inventaire/> : <Login />} /> 
+
 
         {/* Route par défaut qui redirige vers /home */}
         <Route path="/" element={<Navigate to="/home" />} />

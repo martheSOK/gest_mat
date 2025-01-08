@@ -13,17 +13,16 @@ class InventaireRepository implements InventaireRepositoryInterface
     public function statistiquesMaterielParType($idTypeMateriel, $dateDebut, $dateFin)
     {
         return [
-            'total_debut_annee' => $this->materielTotalDebutAnnee($idTypeMateriel),
-            'pf_en_utilisation' => $this->materielFonctionnelEnUtilisation($idTypeMateriel),
-            'pf_en_stock' => $this->materielFonctionnelEnStock($idTypeMateriel),
-            'pf_en_location' => $this->materielFonctionnelEnLocation($idTypeMateriel),
+            'total_debut_annee' => $this->materielTotalDebutAnnee($idTypeMateriel,$dateDebut, $dateFin),
+            'pf_en_utilisation' => $this->materielFonctionnelEnUtilisation($idTypeMateriel,$dateDebut, $dateFin),
+            'pf_en_stock' => $this->materielFonctionnelEnStock($idTypeMateriel,$dateDebut, $dateFin),
+            'pf_en_location' => $this->materielFonctionnelEnLocation($idTypeMateriel,$dateDebut, $dateFin),
 
-            'ab_en_reparation' => $this->materielAbscentEnReparation($idTypeMateriel),
-            'stock_et_hors_service' => $this->materielStockEtHorsService($idTypeMateriel),
-            'location_et_hors_service'=>$this->materielLocationEtHorsService($idTypeMateriel),
-            'reparation_et_hors_service' => $this->materielReparationEtHorsService($idTypeMateriel),
+            'ab_en_reparation' => $this->materielAbscentEnReparation($idTypeMateriel,$dateDebut, $dateFin),
+            'stock_et_hors_service' => $this->materielStockEtHorsService($idTypeMateriel,$dateDebut, $dateFin),
+            'location_et_hors_service'=>$this->materielLocationEtHorsService($idTypeMateriel,$dateDebut, $dateFin),
+            'reparation_et_hors_service' => $this->materielReparationEtHorsService($idTypeMateriel,$dateDebut, $dateFin),
 
-            //'usagers_sur_periode' => $this->materielUsagersSurPeriode($idTypeMateriel, $dateDebut, $dateFin),
         ];
     }
 
@@ -42,69 +41,85 @@ class InventaireRepository implements InventaireRepositoryInterface
 
 
 
-    public function materielTotalDebutAnnee($idTypeMateriel)
+    public function materielTotalDebutAnnee($idTypeMateriel,$dateDebut, $dateFin)
     {
         return Materiel::where('type_materiel_id', $idTypeMateriel)
-            ->whereYear('date_entree', Carbon::now()->year)
+        ->where(function ($query) use ($dateDebut, $dateFin) {
+            $query->whereBetween('date_entree', [$dateDebut, $dateFin])
+                  ->orWhereBetween('date_sortie', [$dateDebut, $dateFin]);
+        })
+        ->count();
+    }
+
+    public function materielFonctionnelEnUtilisation($idTypeMateriel, $dateDebut, $dateFin)
+    {
+        return Materiel::where('type_materiel_id', $idTypeMateriel)
+            ->where('etat', 'Présent fonctionnel')
+            ->where('localisation', 'en utilisation')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
             ->count();
     }
 
-    public function materielFonctionnelEnUtilisation($idTypeMateriel)
+    public function materielFonctionnelEnStock($idTypeMateriel, $dateDebut, $dateFin)
     {
         return Materiel::where('type_materiel_id', $idTypeMateriel)
-        ->where('etat','Présent fonctionnel')->where('localisation', 'en utilisation')
+            ->where('etat', 'Présent fonctionnel')
+            ->where('localisation', 'en magasin')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
             ->count();
     }
 
-    public function materielFonctionnelEnStock($idTypeMateriel)
-    {
-        return
-             Materiel::where('type_materiel_id', $idTypeMateriel)
-             ->where('etat','Présent fonctionnel')->where('localisation', 'en magasin')
-                ->count();
-    }
-    public function materielFonctionnelEnLocation($idTypeMateriel)
-    {
-        return
-             Materiel::where('type_materiel_id', $idTypeMateriel)
-             ->where('etat','Présent fonctionnel')->where('localisation', 'en localisation')
-                ->count();
-    }
-
-
-    public function materielAbscentEnReparation($idTypeMateriel)
-    {
-        return
-             Materiel::where('type_materiel_id', $idTypeMateriel)
-                ->where('etat','Absent')->where('localisation', 'en reparation')
-                ->count();
-    }
-
-    public function materielStockEtHorsService($idTypeMateriel)
-    {
-        return
-             Materiel::where('type_materiel_id', $idTypeMateriel)
-                ->where('etat', 'Présent hors service')->where('localisation','en magasin')
-                ->count();
-
-    }
-
-    public function materielLocationEtHorsService($idTypeMateriel)
-    {
-
-        return Materiel::where('type_materiel_id', $idTypeMateriel)
-                ->where('etat', 'Présent hors service')->where('localisation','en location')
-                ->count();
-
-    }
-    public function materielReparationEtHorsService($idTypeMateriel)
+    public function materielFonctionnelEnLocation($idTypeMateriel, $dateDebut, $dateFin)
     {
         return Materiel::where('type_materiel_id', $idTypeMateriel)
-                ->where('etat', 'Présent hors service')->where('localisation','en reparation')
-                ->count();
-
+            ->where('etat', 'Présent fonctionnel')
+            ->where('localisation', 'en location')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
+            ->count();
     }
 
+    public function materielAbscentEnReparation($idTypeMateriel, $dateDebut, $dateFin)
+    {
+        return Materiel::where('type_materiel_id', $idTypeMateriel)
+            ->where('etat', 'Absent')
+            ->where('localisation', 'en reparation')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
+            ->count();
+    }
+
+    public function materielStockEtHorsService($idTypeMateriel, $dateDebut, $dateFin)
+    {
+        return Materiel::where('type_materiel_id', $idTypeMateriel)
+            ->where('etat', 'Présent hors service')
+            ->where('localisation', 'en magasin')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
+            ->count();
+    }
+
+    public function materielLocationEtHorsService($idTypeMateriel, $dateDebut, $dateFin)
+    {
+        return Materiel::where('type_materiel_id', $idTypeMateriel)
+            ->where('etat', 'Présent hors service')
+            ->where('localisation', 'en location')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
+            ->count();
+    }
+
+    public function materielReparationEtHorsService($idTypeMateriel, $dateDebut, $dateFin)
+    {
+        return Materiel::where('type_materiel_id', $idTypeMateriel)
+            ->where('etat', 'Présent hors service')
+            ->where('localisation', 'en reparation')
+            ->whereBetween('date_entree', [$dateDebut, $dateFin])
+            ->orWhereBetween('date_sortie', [$dateDebut, $dateFin])
+            ->count();
+    }
 
 
     public function getUsersByMaterielAndPeriod($materielId, $dateDebut, $dateFin)

@@ -29,5 +29,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MaterielSeeder::class);
         $this->call(ComposantSeeder::class);
         $this->call(PretSeeder::class);
+        //$this->call(LignePretSeeder::class);
     }
 }

@@ -28,7 +28,7 @@ class UpdatePretRequest extends FormRequest
             'date_pret' => 'required|date|before_or_equal:today',
             'date_retour' => 'nullable|date|after:date_pret',
             'type_pret' => 'required|string|max:255',
-            'etat' => 'required|string|max:255',
+            //'etat' => 'required|string|max:255',
 
             // Validation des lignes de prêt
             //'lignes' => 'required|array|min:1',
@@ -48,7 +48,7 @@ class UpdatePretRequest extends FormRequest
             'date_retour.date' => 'La date de retour prévue doit être une date valide.',
             'date_retour.after' => 'La date de retour prévue doit être après la date de prêt.',
             'type_pret.required' => 'Le type de prêt est obligatoire.',
-            'etat.required' => 'L\'état est obligatoire.',
+            //'etat.required' => 'L\'état est obligatoire.',
 
             // Messages d'erreur pour les lignes de prêt
             'lignes.required' => 'Au moins une ligne de prêt est requise.',

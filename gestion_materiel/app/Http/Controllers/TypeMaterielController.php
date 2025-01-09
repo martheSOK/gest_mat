@@ -94,24 +94,52 @@ class TypeMaterielController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
+
     public function destroy(Type_materiel $type_materiel)
         {
-            // Vérifie si le type de matériel est utilisé dans la table materiels
-            $materielExiste = DB::table('materiels')
-                ->where('type_materiel_id', $type_materiel->id)
-                ->exists();  
+            // Vérifie si le type de matériel est référencé dans la table materiels
+            $materielsAssocies = $type_materiel->materiels;
 
-            if (!$materielExiste) {
-                // Si aucun matériel n'est référencé, supprimer le type de matériel
+            if ($materielsAssocies->isEmpty()) {
+                // Si le type n'est pas référencé, on peut le supprimer directement
                 $this->type_materielRepositoryInterface->delete($type_materiel->id);
-                return ApiResponseClass::sendResponse('Type de matériel supprimé avec succès', '', 200);
+
+                return ApiResponseClass::sendResponse(
+                    'Type de matériel supprimé avec succès (aucun matériel référencé).',
+                    '',
+                    200
+                );
             }
 
-            // Si des matériels sont référencés, renvoyer un message d'erreur
-            return ApiResponseClass::sendResponse('Erreur : Action non permise. Ce type de matériel est en cours d’utilisation.', '', 403);
+            // Vérifie les matériels associés qui remplissent les conditions
+            $materielsFiltrés = $materielsAssocies->filter(function ($materiel) {
+                return $materiel->etat === 'Présent fonctionnel' && $materiel->localisation === 'en magasin';
+            });
+
+            if ($materielsFiltrés->count() === $materielsAssocies->count()) {
+                // Supprime les matériels qui remplissent les conditions
+                foreach ($materielsFiltrés as $materiel) {
+                    $materiel->delete();
+                }
+
+                // Supprime ensuite le type de matériel
+                $this->type_materielRepositoryInterface->delete($type_materiel->id);
+
+                return ApiResponseClass::sendResponse(
+                    'Type de matériel et matériels associés supprimés avec succès.',
+                    '',
+                    200
+                );
+            }
+
+            // Si certains matériels ne remplissent pas les conditions
+            return ApiResponseClass::sendResponse(
+                'Erreur : Ce matériel est en cours d’utilisation ou prêter ou ne remplissent pas les critères.',
+                '',
+                403
+            );
         }
+
 
 }

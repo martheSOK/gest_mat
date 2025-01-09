@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('prets', function (Blueprint $table) {
             $table->bigIncrements('id');
-            // $table->integer('materiel_id');
             $table->integer('user_id');
             $table->datetime('date_pret');
-            //$table->datetime('date_retour_prevu');
             $table->datetime('date_retour');
             $table->enum('type_pret' , ["réparation" , "emprunt"]);
-            $table->enum('etat' ,["en cours" , "restitué"]);
+            $table->enum('etat' ,["en cours" , "restitué"])->default('en cours');
             $table->timestamps();
 
 

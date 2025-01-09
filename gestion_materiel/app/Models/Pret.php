@@ -15,11 +15,15 @@ class Pret extends Model
     protected $fillable=[
         'user_id',
         'date_pret',
-        //'date_retour_prevu',
         'date_retour',
         'type_pret',
         'etat',
 
+    ];
+
+    // Attributs par défaut
+    protected $attributes = [
+        'etat' => 'en cours',
     ];
 
     protected $guarded =[

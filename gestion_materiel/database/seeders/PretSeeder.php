@@ -15,13 +15,13 @@ class PretSeeder extends Seeder
     {
         //
 
-        Pret::create([
-            "user_id" => 1,
-            "date_pret"  => "10/08/2024",
-            //"date_retour_prevu" => "12/09/2024",
-            "date_retour" => "01/10/2024",
-            "type_pret"  => "emprunt",
-            "etat" => "en cours"
-        ]);
+        // Pret::create([
+        //     "user_id" => 1,
+        //     "date_pret"  => "10/08/2024",
+        //     "date_retour" => "01/10/2024",
+        //     "type_pret"  => "emprunt",
+        //     "etat" => "en cours",
+
+        // ]);
     }
 }

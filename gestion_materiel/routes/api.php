@@ -54,13 +54,13 @@ Route::get('lignePrets/lignePret_show/{lignePret}',[LignePretController::class, 
 Route::put('lignePrets/{lignePret}' , [LignePretController::class , 'update']);
 Route::delete('lignePrets/{lignePret}' , [LignePretController::class , 'destroy']);
 
-// //route pour l'inventaire
+// route pour l'inventaire
 Route::get('inventaire/statistiques/{dateDebut}/{dateFin}',[InventaireController::class, 'afficherStatistiquesMateriel']);
 
 //route pour faire l'historique d'utilisation du matériel
 Route::get('historiqueDutilisation/{materielid}',[InventaireController::class, 'getUsersUsingMateriel']);
 
-// //route pour l'authentification
+// route pour l'authentification
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

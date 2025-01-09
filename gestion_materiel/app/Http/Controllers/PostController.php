@@ -104,22 +104,50 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    // public function destroy(Post $post)
+    //     {
+    //         // Vérifie si le post est utilisé dans la table materiels
+    //         $postEstUtilise = DB::table('materiels')
+    //             ->where('post_id', $post->id)
+    //             ->exists();  // Utilise exists() pour vérifier si le poste est référencé dans la table materiels
+
+    //         if (!$postEstUtilise) {
+    //             // Si aucun matériel ne fait référence à ce post, supprimer le post
+    //             $this->postRepositoryInterface->delete($post->id);
+    //             return ApiResponseClass::sendResponse('Post supprimé avec succès', '', 200);
+    //         }
+
+    //         // Si des matériels sont référencés à ce post, renvoyer un message d'erreur
+    //         return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
+    //     }
+
+
     public function destroy(Post $post)
         {
             // Vérifie si le post est utilisé dans la table materiels
-            $postEstUtilise = DB::table('materiels')
+            $postEstUtiliseMateriels = DB::table('materiels')
                 ->where('post_id', $post->id)
-                ->exists();  // Utilise exists() pour vérifier si le poste est référencé dans la table materiels
+                ->exists();
 
-            if (!$postEstUtilise) {
-                // Si aucun matériel ne fait référence à ce post, supprimer le post
-                $this->postRepositoryInterface->delete($post->id);
-                return ApiResponseClass::sendResponse('Post supprimé avec succès', '', 200);
+            // Vérifie si le post est utilisé dans la table user_posts
+            $postEstUtiliseUserPosts = DB::table('user_posts')
+                ->where('post_id', $post->id)
+                ->exists();
+
+            if ($postEstUtiliseMateriels || $postEstUtiliseUserPosts) {
+                // Si le post est utilisé dans materiels ou user_posts, renvoyer une erreur
+                return ApiResponseClass::sendResponse(
+                    'Erreur : Ce poste est toujours utilisé par un matériel ou un utilisateur, vous ne pouvez pas le supprimer.',
+                    '',
+                    403
+                );
             }
 
-            // Si des matériels sont référencés à ce post, renvoyer un message d'erreur
-            return ApiResponseClass::sendResponse('Erreur : Action non permise.', '', 403);
+            // Si le post n'est pas utilisé, procéder à la suppression
+            $this->postRepositoryInterface->delete($post->id);
+            return ApiResponseClass::sendResponse('Post supprimé avec succès', '', 200);
         }
+
 
 
 

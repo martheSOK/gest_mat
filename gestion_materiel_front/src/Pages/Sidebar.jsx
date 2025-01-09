@@ -13,6 +13,7 @@ export default function Sidebar() {
   const [isDropdownOpen4, setIsDropdownOpen4] = useState(false);
   const [isDropdownOpen5, setIsDropdownOpen5] = useState(false);
   const [isDropdownOpen6, setIsDropdownOpen6] = useState(false);
+  const [isDropdownOpen7,   setIsDropdownOpen7 ] = useState(false);
   // Fonction pour basculer la sidebar
  const toggleSidebar = () => {
     setIsOpen(!isOpen); // Bascule l'état de la sidebar
@@ -47,7 +48,10 @@ export default function Sidebar() {
   const toggleDropdown6 = () => {
     setIsDropdownOpen6(!isDropdownOpen6);
   };
-
+  
+  const toggleDropdown7 = () => {
+    setIsDropdownOpen7(!isDropdownOpen7);
+  };
 
  
     const { user, setToken, setUser, token } = useContext(AppContext);
@@ -285,6 +289,31 @@ export default function Sidebar() {
 
 
 
+                   
+                   
+              {/* Menu déroulant Inventaire */}
+              <div
+                    className="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white"
+                    onClick={toggleDropdown7}
+                  >
+                    <i className="bi bi-chat-left-text-fill"></i>
+                    <div className="flex justify-between w-full items-center">
+                      <span className="text-[15px] ml-4 text-gray-200 font-bold">Inventaire</span>
+                      <span className={`text-sm ${isDropdownOpen7 ? "rotate-180" : ""}`}>
+                        <i className="bi bi-chevron-down"></i>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Sous-menu d'inventaire */}
+                  {isDropdownOpen7 && (
+                    <div className="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold">
+                      <Link to="/Inventaire" className="nav-link">Voir l inventaire</Link>
+                    </div>
+                  )}
+
+
+      
           <div className="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
             <i className="bi bi-box-arrow-in-right"></i>
             {/* <span className="text-[15px] ml-4 text-gray-200 font-bold">Logout</span> */}

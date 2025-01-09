@@ -7,15 +7,15 @@ interface InventaireRepositoryInterface
     //
 
     public function statistiquesMaterielParType($idTypeMateriel, $dateDebut, $dateFin);
-    public function materielTotalDebutAnnee($idTypeMateriel);
-    public function materielFonctionnelEnStock($idTypeMateriel);
-    public function materielFonctionnelEnLocation($idTypeMateriel);
-    public function materielFonctionnelEnUtilisation($idTypeMateriel);
-    public function materielAbscentEnReparation($idTypeMateriel);
-    public function materielStockEtHorsService($idTypeMateriel);
-    public function materielLocationEtHorsService($idTypeMateriel);
-    public function materielReparationEtHorsService($idTypeMateriel);
-    public function statistiquesTousMateriels($dateDebut, $dateFin);
+    public function materielTotalDebutAnnee($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielFonctionnelEnStock($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielFonctionnelEnLocation($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielFonctionnelEnUtilisation($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielAbscentEnReparation($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielStockEtHorsService($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielLocationEtHorsService($idTypeMateriel,$dateDebut, $dateFin);
+    public function materielReparationEtHorsService($idTypeMateriel,$dateDebut, $dateFin);
+    public function statistiquesTousMateriels($dateDebut, $dateFin,);
    // public function getUsagerMateriel($materielId, $dateDebut, $dateFin);
     public function getUsersByMaterielAndPeriod($materielId, $dateDebut, $dateFin);
 }

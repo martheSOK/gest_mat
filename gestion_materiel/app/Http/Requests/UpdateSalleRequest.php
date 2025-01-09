@@ -23,8 +23,10 @@ class UpdateSalleRequest extends FormRequest
      */
     public function rules(): array
     {
+       // dd($this->route('salle')->id);
         return [
-            'nomination' => 'required|string|max:100|unique:salles,nomination',
+            // Exclure la salle actuelle de la validation unique
+            'nomination' => 'required|string|max:100|unique:salles,nomination,' . $this->route('salle')->id,
             'nombre_post' => 'nullable|integer|min:1',
         ];
     }

@@ -50,13 +50,13 @@ class SalleController extends Controller
 
         }
         catch(\Exception $ex) {
-            DB::rollBack();  // Annuler la transaction en cas d'erreur
+            DB::rollBack(); 
 
             // Log l'erreur pour mieux comprendre la cause
             Log::error("Erreur lors de la création de la salle: " . $ex->getMessage());
 
-            // Retourne la réponse d'erreur
-            return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
+            // je Retourne la réponse d'erreur
+            return ApiResponseClass::rollback($ex->getMessage());
         }
     }
 
@@ -76,7 +76,6 @@ class SalleController extends Controller
     public function update(UpdateSalleRequest $request, Salle $salle)
     {
         //
-
         $updateDetails =[
             'nomination' => $request->nomination,
             'nombre_post' => $request->nombre_post
@@ -89,13 +88,13 @@ class SalleController extends Controller
              return ApiResponseClass::sendResponse('salle Update Successful','',201);
 
         }catch(\Exception $ex) {
-            DB::rollBack();  // Annuler la transaction en cas d'erreur
+            DB::rollBack();
 
-            // Log l'erreur pour mieux comprendre la cause
+            // je Log l'erreur pour mieux comprendre la cause
             Log::error("Erreur lors de la mise à jour de la salle: " . $ex->getMessage());
 
-            // Retourne la réponse d'erreur
-            return ApiResponseClass::rollback($ex->getMessage());  // Utilise le message de l'exception
+            // je Retourne la réponse d'erreur
+            return ApiResponseClass::rollback($ex->getMessage());
         }
     }
 
@@ -103,36 +102,36 @@ class SalleController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Salle $salle)
-{
-    // Vérifie si la salle est utilisée dans les tables materiels ou posts
-    $salleEstUtiliseeDansMateriels = DB::table('materiels')
-        ->where('salle_id', $salle->id)
-        ->exists();
+        {
+            // Vérifie si la salle est utilisée dans les tables materiels ou posts
+            $salleEstUtiliseeDansMateriels = DB::table('materiels')
+                ->where('salle_id', $salle->id)
+                ->exists();
 
-    $salleEstUtiliseeDansPosts = DB::table('posts')
-        ->where('salle_id', $salle->id)
-        ->exists();
+            $salleEstUtiliseeDansPosts = DB::table('posts')
+                ->where('salle_id', $salle->id)
+                ->exists();
 
-    // Si la salle n'est référencée ni dans materiels ni dans posts, on peut la supprimer
-    if (!$salleEstUtiliseeDansMateriels && !$salleEstUtiliseeDansPosts) {
-        $this->salleRepositoryInterface->delete($salle->id);
-        return ApiResponseClass::sendResponse('Salle supprimée avec succès', '', 200);
-    }
+            // Si la salle n'est référencée ni dans materiels ni dans posts, on peut la supprimer
+            if (!$salleEstUtiliseeDansMateriels && !$salleEstUtiliseeDansPosts) {
+                $this->salleRepositoryInterface->delete($salle->id);
+                return ApiResponseClass::sendResponse('Salle supprimée avec succès', '', 200);
+            }
 
-    // Renvoie un message d'erreur spécifique si la salle est utilisée
-    $message = 'Impossible de supprimer la salle. Elle est référencée dans ';
-    if ($salleEstUtiliseeDansMateriels) {
-        $message .= 'la table matériels';
-    }
-    if ($salleEstUtiliseeDansPosts) {
-        if ($salleEstUtiliseeDansMateriels) {
-            $message .= ' et ';
+            // Renvoie un message d'erreur spécifique si la salle est utilisée
+            $message = 'Impossible de supprimer la salle. Elle est référencée dans ';
+            if ($salleEstUtiliseeDansMateriels) {
+                $message .= 'la table matériels';
+            }
+            if ($salleEstUtiliseeDansPosts) {
+                if ($salleEstUtiliseeDansMateriels) {
+                    $message .= ' et ';
+                }
+                $message .= 'la table posts';
+            }
+            $message .= '.';
+
+            return ApiResponseClass::sendResponse($message, '', 403);
         }
-        $message .= 'la table posts';
-    }
-    $message .= '.';
-
-    return ApiResponseClass::sendResponse($message, '', 403);
-}
 
 }

@@ -128,6 +128,7 @@ class PretController extends Controller
             'date_pret' => $request->date_pret,
             'date_retour' => $request->date_retour,
             'type_pret' => $request->type_pret,
+            'etat' => $request->etat,
         ];
 
         DB::beginTransaction();
